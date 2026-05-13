@@ -34,6 +34,72 @@ export function getRiskLevel(velocity) {
   if (velocity <= -2)  return { grade: '주의', color: '#eab308', emoji: '🟡' }
   return { grade: '안전', color: '#16a34a', emoji: '🟢' }
 }
+// 위험 등급별 상세 정보 (행동 가이드, 권장 사항)
+export function getRiskGuide(velocity) {
+  if (velocity <= -10) {
+    return {
+      summary: '연간 10mm 이상 빠른 침하가 진행 중인 고위험 지역입니다.',
+      actions: [
+        '🚨 거주민: 인근 건물의 균열·기울어짐 발견 시 즉시 119 또는 관할 구청에 신고',
+        '🏢 사업자: 건물 안전진단 의뢰 (한국시설안전공단 1577-8855)',
+        '👀 일상 점검: 도로 함몰, 맨홀 침하, 벽 균열 정기 확인',
+        '🚧 도로/공사: 인근 굴착 공사 진행 시 추가 침하 위험 — 관계 기관 통보',
+      ],
+      precautions: [
+        '대형 건물 신축 신중히 검토',
+        '지하수 과도한 사용 자제',
+        '기존 노후 건물 정밀 점검 필수',
+      ],
+      contacts: [
+        { name: '국토안전관리원', phone: '1670-9090', desc: '지반침하 신고' },
+        { name: '강원도청 재난안전실', phone: '033-249-3500', desc: '지역 재난 신고' },
+        { name: '소방서', phone: '119', desc: '응급 상황' },
+      ],
+    }
+  }
+  if (velocity <= -5) {
+    return {
+      summary: '경고 수준의 침하가 진행 중입니다. 지속 관찰이 필요합니다.',
+      actions: [
+        '👀 거주민: 집/건물 균열, 문짝 뒤틀림 등 변화 관찰',
+        '📞 의심 시: 관할 구청 또는 국토안전관리원에 문의',
+        '🏗️ 신축 공사: 지반 조사 보고서 확인',
+      ],
+      precautions: [
+        '인접 지역 지반 변화 모니터링',
+        '폐광·매립지 인근 활동 주의',
+      ],
+      contacts: [
+        { name: '국토안전관리원', phone: '1670-9090', desc: '지반침하 신고' },
+        { name: '강원도청 재난안전실', phone: '033-249-3500', desc: '지역 재난 신고' },
+      ],
+    }
+  }
+  if (velocity <= -2) {
+    return {
+      summary: '경미한 침하가 관측되지만 안정 범위 내에 있습니다.',
+      actions: [
+        '📊 정기 관찰 권장 (월 1회 정도)',
+        '🆘 변화 감지 시 신고 채널 이용',
+      ],
+      precautions: ['대규모 굴착 공사 시 영향 평가 필요'],
+      contacts: [
+        { name: '국토안전관리원', phone: '1670-9090', desc: '문의/신고' },
+      ],
+    }
+  }
+  return {
+    summary: '안정적인 지반 상태를 유지하고 있습니다.',
+    actions: [
+      '✅ 특별한 조치 불필요',
+      '🌱 일반적 시설 관리 권장',
+    ],
+    precautions: [],
+    contacts: [
+      { name: '국토안전관리원', phone: '1670-9090', desc: '문의' },
+    ],
+  }
+}
 // 시계열 가짜 데이터 생성 함수
 // 진짜 API 연결되면 백엔드에서 받아올 예정 (GET /timeseries)
 export function generateTimeSeries(velocity) {

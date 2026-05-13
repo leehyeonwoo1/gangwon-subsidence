@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { gangwonRegions, getRiskLevel } from './regions'
+import { gangwonRegions, getRiskLevel, getRiskGuide } from './regions'
 
 function ChatBot({ isOpen, onClose, onRegionSelect }) {
   // 메시지 목록 상태
@@ -22,71 +22,159 @@ function ChatBot({ isOpen, onClose, onRegionSelect }) {
 
   // 가짜 AI 응답 생성 함수
   const generateFakeResponse = (question) => {
-    const q = question.toLowerCase()
+  const q = question.toLowerCase()
 
-    // 키워드 기반 응답 (간단한 패턴 매칭)
-    if (q.includes('가장 위험') || q.includes('제일 위험') || q.includes('위험한 지역')) {
-      const sorted = [...gangwonRegions].sort((a, b) => a.velocity - b.velocity)
-      const top3 = sorted.slice(0, 3)
-      return `현재 강원도에서 가장 위험한 지역 TOP 3입니다:\n\n` +
-        top3.map((r, i) => {
-          const risk = getRiskLevel(r.velocity)
-          return `${i + 1}. ${risk.emoji} **${r.name}**: ${r.velocity} mm/year (${risk.grade})`
-        }).join('\n') +
-        `\n\n특히 ${top3[0].name}은(는) 연간 ${Math.abs(top3[0].velocity)}mm의 빠른 침하가 진행 중이라 정밀 모니터링이 필요합니다.`
-    }
+  // === 1. 가장 위험한 지역 ===
+  if (q.includes('가장 위험') || q.includes('제일 위험') || q.includes('위험한 지역')) {
+    const sorted = [...gangwonRegions].sort((a, b) => a.velocity - b.velocity)
+    const top3 = sorted.slice(0, 3)
+    const top = top3[0]
+    const guide = getRiskGuide(top.velocity)
 
-    if (q.includes('안전한 지역') || q.includes('안정')) {
-      const sorted = [...gangwonRegions].sort((a, b) => b.velocity - a.velocity)
-      const top3 = sorted.slice(0, 3)
-      return `현재 강원도에서 가장 안정적인 지역입니다:\n\n` +
-        top3.map((r, i) => `${i + 1}. 🟢 **${r.name}**: ${r.velocity} mm/year`).join('\n')
-    }
-
-    if (q.includes('전체') || q.includes('통계') || q.includes('얼마나')) {
-      const dangerous = gangwonRegions.filter(r => r.velocity <= -10).length
-      const warning = gangwonRegions.filter(r => r.velocity > -10 && r.velocity <= -5).length
-      const caution = gangwonRegions.filter(r => r.velocity > -5 && r.velocity <= -2).length
-      const safe = gangwonRegions.filter(r => r.velocity > -2).length
-      return `강원도 18개 시·군의 지반침하 현황입니다:\n\n` +
-        `🔴 위험: ${dangerous}개\n🟠 경고: ${warning}개\n🟡 주의: ${caution}개\n🟢 안전: ${safe}개\n\n` +
-        `전체적으로 동남부(태백, 정선) 지역이 폐광 영향으로 침하가 두드러집니다.`
-    }
-
-    // 특정 지역 질문 처리
-    const matchedRegion = gangwonRegions.find(r => question.includes(r.name.replace('시', '').replace('군', '')))
-    if (matchedRegion) {
-      const risk = getRiskLevel(matchedRegion.velocity)
-      return `${risk.emoji} **${matchedRegion.name}** 분석 결과입니다:\n\n` +
-        `• 위험 등급: **${risk.grade}**\n` +
-        `• 침하 속도: ${matchedRegion.velocity} mm/year\n` +
-        `• 최종 갱신: ${matchedRegion.lastUpdated}\n\n` +
-        (matchedRegion.velocity <= -10
-          ? `⚠️ 연간 10mm 이상의 빠른 침하가 관측됩니다. 정밀 모니터링이 필요합니다.`
-          : matchedRegion.velocity <= -5
-          ? `📊 경고 수준의 침하가 진행 중입니다. 지속 관찰이 필요합니다.`
-          : matchedRegion.velocity <= -2
-          ? `📈 경미한 침하가 관측되나 안정 범위 내에 있습니다.`
-          : `✅ 안정적인 지반 상태를 유지하고 있습니다.`)
-    }
-
-    // 안녕/도움말
-    if (q.includes('안녕') || q.includes('hi') || q.includes('hello')) {
-      return '안녕하세요! 강원도 18개 시·군의 지반침하 데이터를 기반으로 답변드릴 수 있습니다. 🛰️'
-    }
-
-    if (q.includes('도움') || q.includes('뭐 할 수') || q.includes('할 수 있')) {
-      return `다음과 같은 질문에 답변할 수 있어요:\n\n` +
-        `• "가장 위험한 지역은?"\n` +
-        `• "안정적인 지역은?"\n` +
-        `• "춘천시는 어때?"\n` +
-        `• "전체 통계 보여줘"\n` +
-        `• 특정 시·군 이름 (예: "태백", "정선")`
-    }
-
-    // 기본 응답
-    return `질문을 잘 이해하지 못했어요. 😅\n\n다음과 같이 물어봐 주세요:\n• "가장 위험한 지역은?"\n• "춘천시 침하 상태?"\n• "전체 통계"`
+    return `🚨 강원도 침하 위험 TOP 3\n\n` +
+      top3.map((r, i) => {
+        const risk = getRiskLevel(r.velocity)
+        return `${i + 1}. ${risk.emoji} **${r.name}**: ${r.velocity} mm/year (${risk.grade})`
+      }).join('\n') +
+      `\n\n📍 **${top.name} 분석:**\n${guide.summary}\n\n` +
+      `🔧 **권장 조치:**\n` +
+      guide.actions.slice(0, 2).map(a => `• ${a}`).join('\n') +
+      `\n\n📞 **${top.name} 거주민이라면:**\n` +
+      `• ${guide.contacts[0].name}: ${guide.contacts[0].phone}\n` +
+      `\n💬 "${top.name} 자세히" 라고 물어보면 더 자세한 정보 제공합니다.`
   }
+
+  // === 2. 안전한 지역 ===
+  if (q.includes('안전한 지역') || q.includes('안정')) {
+    const sorted = [...gangwonRegions].sort((a, b) => b.velocity - a.velocity)
+    const top3 = sorted.slice(0, 3)
+    return `🟢 강원도 안정 지역 TOP 3\n\n` +
+      top3.map((r, i) => `${i + 1}. **${r.name}**: ${r.velocity} mm/year`).join('\n') +
+      `\n\n💡 이들 지역도 정기 모니터링은 권장됩니다. 갑작스러운 굴착 공사나 지하수 변화 시 상황이 바뀔 수 있습니다.`
+  }
+
+  // === 3. 전체 통계 ===
+  if (q.includes('전체') || q.includes('통계') || q.includes('얼마나')) {
+    const dangerous = gangwonRegions.filter(r => r.velocity <= -10)
+    const warning = gangwonRegions.filter(r => r.velocity > -10 && r.velocity <= -5)
+    const caution = gangwonRegions.filter(r => r.velocity > -5 && r.velocity <= -2)
+    const safe = gangwonRegions.filter(r => r.velocity > -2)
+    
+    return `📊 강원도 18개 시·군 침하 현황\n\n` +
+      `🔴 위험: ${dangerous.length}개 ${dangerous.length > 0 ? `(${dangerous.map(r => r.name).join(', ')})` : ''}\n` +
+      `🟠 경고: ${warning.length}개\n` +
+      `🟡 주의: ${caution.length}개\n` +
+      `🟢 안전: ${safe.length}개\n\n` +
+      `📍 **위험 패턴:**\n` +
+      `동남부(태백, 정선) 일대는 과거 폐광 활동과 카르스트 지형 영향으로 침하가 두드러집니다.\n\n` +
+      `💡 본인 거주 지역이 위험 등급이라면 **"○○시 자세히"** 라고 물어보세요.`
+  }
+
+  // === 4. 행동 가이드 / 뭘 해야 해 ===
+  if (q.includes('뭘 해') || q.includes('어떻게 해') || q.includes('조치') || q.includes('대처') || q.includes('대응')) {
+    return `🛡️ 지반침하 발견 시 행동 가이드\n\n` +
+      `**1️⃣ 즉시 조치 (위험 발견 시)**\n` +
+      `• 도로 함몰, 건물 균열 발견 → 119 신고\n` +
+      `• 가스 누출 의심 → 가스 차단 후 대피\n\n` +
+      `**2️⃣ 일상 점검**\n` +
+      `• 집 바닥/벽 균열 정기 확인\n` +
+      `• 문짝 뒤틀림, 창문 안 닫힘 → 침하 의심\n` +
+      `• 마당의 갑작스러운 침하 흔적\n\n` +
+      `**3️⃣ 주요 연락처**\n` +
+      `• 국토안전관리원: 1670-9090\n` +
+      `• 강원도청 재난안전실: 033-249-3500\n` +
+      `• 소방서: 119\n\n` +
+      `💬 지역별 권장 조치를 원하면 시·군 이름을 알려주세요.`
+  }
+
+  // === 5. 신고 / 제보 ===
+  if (q.includes('신고') || q.includes('제보') || q.includes('연락')) {
+    return `📞 지반침하 신고 채널\n\n` +
+      `**즉시 신고 (위급)**\n` +
+      `🚨 119 — 도로 함몰, 건물 붕괴 위험\n\n` +
+      `**일반 신고 / 문의**\n` +
+      `🏛️ 국토안전관리원: 1670-9090\n` +
+      `🏛️ 강원도청 재난안전실: 033-249-3500\n` +
+      `📱 안전신문고 앱 또는 www.safetyreport.go.kr\n\n` +
+      `**신고 시 알려주면 좋은 정보**\n` +
+      `• 정확한 위치 (주소, 좌표)\n` +
+      `• 침하 규모 (크기, 깊이)\n` +
+      `• 사진/영상 (가능하면)\n` +
+      `• 발견 시점`
+  }
+
+  // === 6. 특정 지역 ===
+  const matchedRegion = gangwonRegions.find(r => 
+    question.includes(r.name.replace('시', '').replace('군', ''))
+  )
+  
+  if (matchedRegion) {
+    const risk = getRiskLevel(matchedRegion.velocity)
+    const guide = getRiskGuide(matchedRegion.velocity)
+    const isDetailed = q.includes('자세히') || q.includes('상세') || q.includes('더')
+    
+    let response = `${risk.emoji} **${matchedRegion.name}** 분석\n\n` +
+      `• 위험 등급: **${risk.grade}**\n` +
+      `• 침하 속도: ${matchedRegion.velocity} mm/year\n` +
+      `• 최종 갱신: ${matchedRegion.lastUpdated}\n\n` +
+      `📋 **상황:**\n${guide.summary}\n\n`
+    
+    if (isDetailed || matchedRegion.velocity <= -5) {
+      response += `🔧 **권장 조치:**\n` +
+        guide.actions.map(a => `• ${a}`).join('\n') + `\n\n`
+      
+      if (guide.precautions.length > 0) {
+        response += `⚠️ **주의 사항:**\n` +
+          guide.precautions.map(p => `• ${p}`).join('\n') + `\n\n`
+      }
+      
+      response += `📞 **연락처:**\n` +
+        guide.contacts.map(c => `• ${c.name} (${c.desc}): ${c.phone}`).join('\n')
+    } else {
+      response += `💬 더 자세한 정보는 "${matchedRegion.name} 자세히" 라고 물어보세요.`
+    }
+    
+    return response
+  }
+
+  // === 7. 인사 ===
+  if (q.includes('안녕') || q.includes('hi') || q.includes('hello')) {
+    return `안녕하세요! 🛰️ 강원도 지반침하 모니터링 AI입니다.\n\n` +
+      `Sentinel-1 위성 SAR 데이터를 기반으로 강원도 18개 시·군의 침하 현황을 안내해 드립니다.\n\n` +
+      `**자주 묻는 질문:**\n` +
+      `• "가장 위험한 지역은?"\n` +
+      `• "○○시 자세히"\n` +
+      `• "신고는 어떻게?"\n` +
+      `• "전체 통계"`
+  }
+
+  // === 8. 도움말 ===
+  if (q.includes('도움') || q.includes('뭐 할 수') || q.includes('할 수 있') || q.includes('메뉴')) {
+    return `💡 이용 가이드\n\n` +
+      `**📊 데이터 조회**\n` +
+      `• "가장 위험한 지역?" — TOP 3\n` +
+      `• "안전한 지역?" — 안정 지역\n` +
+      `• "전체 통계" — 등급별 분포\n` +
+      `• "춘천시 자세히" — 시·군 상세\n\n` +
+      `**🛡️ 안전 정보**\n` +
+      `• "뭘 해야 해?" — 행동 가이드\n` +
+      `• "신고 채널" — 연락처\n\n` +
+      `**🗺️ 지도 활용**\n` +
+      `• 지도에서 지역 클릭 → 상세 그래프\n` +
+      `• 확대(줌인) → 읍·면·동 단위 분석`
+  }
+
+  // === 기본 응답 ===
+  return `질문을 이해하지 못했어요. 😅\n\n` +
+    `**이런 식으로 물어봐 주세요:**\n\n` +
+    `🚨 위험 정보\n` +
+    `• "가장 위험한 지역?"\n` +
+    `• "태백시 자세히"\n\n` +
+    `🛡️ 안전 정보\n` +
+    `• "뭘 해야 해?"\n` +
+    `• "신고는 어떻게?"\n\n` +
+    `💬 "도움말" 이라고 입력하면 전체 메뉴를 확인할 수 있습니다.`
+}
 
   // 메시지 전송
   const handleSend = () => {
@@ -261,7 +349,7 @@ function ChatBot({ isOpen, onClose, onRegionSelect }) {
           flexWrap: 'wrap',
         }}
       >
-        {['가장 위험한 지역?', '전체 통계', '태백시 분석'].map((q) => (
+        {['가장 위험한 지역?', '전체 통계', '뭘 해야 해?', '신고 채널'].map((q) => (
           <button
             key={q}
             className="quick-question-btn"
