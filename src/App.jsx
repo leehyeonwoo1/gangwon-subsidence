@@ -79,14 +79,12 @@ function App() {
   // ============================================
 
   const selectRegionSmart = (region) => {
-    setSelectedRegion(region)
-    if (!isWideScreen && region) setIsChatOpen(false)
-  }
+  setSelectedRegion(region)
+}
 
-  const openChatSmart = () => {
-    setIsChatOpen(true)
-    if (!isWideScreen) setSelectedRegion(null)
-  }
+const openChatSmart = () => {
+  setIsChatOpen(true)
+}
 
   const matchRegion = (geoName) => {
     if (!geoName || typeof geoName !== 'string') return null
@@ -393,10 +391,10 @@ function App() {
 
       {/* 사이드 패널 */}
       <SidePanel
-        region={selectedRegion}
-        onClose={() => setSelectedRegion(null)}
-        isChatOpen={isChatOpen}
-      />
+  region={selectedRegion}
+  onClose={() => setSelectedRegion(null)}
+  isChatOpen={false}
+/>
 
       {/* 챗봇 */}
       <ChatBot
@@ -439,11 +437,7 @@ function App() {
         style={{
           position: 'absolute',
           bottom: '20px',
-          right:
-            selectedRegion && isChatOpen ? '800px' :
-            isChatOpen ? '420px' :
-            selectedRegion ? '400px' :
-            '20px',
+          right: selectedRegion ? '400px' : '20px',
           padding: '14px 18px',
           borderRadius: '12px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.08)',

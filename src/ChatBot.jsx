@@ -138,22 +138,22 @@ function ChatBot({ isOpen, onClose, onRegionSelect }) {
 
   return (
   <div
-    style={{
-      position: 'absolute',
-      top: '20px',
-      right: '20px',
-      width: '380px',
-      maxHeight: 'calc(100vh - 40px)',
-      background: 'white',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-      zIndex: 1100,
-      display: 'flex',
-      flexDirection: 'column',
-      boxSizing: 'border-box',
-      borderRadius: '16px',
-      overflow: 'hidden',
-    }}
-  >
+  style={{
+    position: 'absolute',
+    top: '140px',
+    left: '20px',
+    width: '380px',
+    maxHeight: 'calc(100vh - 240px)',
+    background: 'white',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+    zIndex: 1100,
+    display: 'flex',
+    flexDirection: 'column',
+    boxSizing: 'border-box',
+    borderRadius: '16px',
+    overflow: 'hidden',
+  }}
+>
       {/* 헤더 */}
       <div
         style={{
