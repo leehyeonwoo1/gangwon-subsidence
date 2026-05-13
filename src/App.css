@@ -1,0 +1,147 @@
+/* ===== 기본 리셋 ===== */
+html, body, #root {
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ===== 지도 영역 툴팁 ===== */
+.region-tooltip {
+  background: rgba(17, 24, 39, 0.92) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 6px 12px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(8px);
+}
+
+.region-tooltip::before {
+  display: none !important;
+}
+
+/* ===== 스크롤바 디자인 ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ===== 애니메이션 정의 ===== */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ===== 사이드 패널 슬라이드 애니메이션 ===== */
+.side-panel {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== 챗봇 메시지 등장 애니메이션 ===== */
+.chat-message {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* ===== 챗봇 플로팅 버튼 호버 ===== */
+.chat-fab {
+  transition: all 0.2s ease;
+  animation: float 3s ease-in-out infinite;
+}
+
+.chat-fab:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4) !important;
+}
+
+/* ===== 빠른 질문 버튼 호버 ===== */
+.quick-question-btn {
+  transition: all 0.15s ease;
+}
+
+.quick-question-btn:hover:not(:disabled) {
+  background: #e5e7eb !important;
+  transform: translateY(-1px);
+}
+
+/* ===== 일반 버튼 호버 ===== */
+.btn-primary {
+  transition: all 0.15s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* ===== 인포 카드 (좌측 상단 제목) ===== */
+.info-card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ===== 범례 ===== */
+.legend-card {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
