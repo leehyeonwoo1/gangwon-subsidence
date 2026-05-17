@@ -282,10 +282,16 @@ const openChatSmart = () => {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <MapContainer
-        center={gangwonCenter}
-        zoom={9}
-        style={{ width: '100%', height: '100%' }}
-      >
+  center={gangwonCenter}
+  zoom={9}
+  minZoom={7}
+  maxBounds={[
+    [33.0, 124.0],  // 남서쪽 (제주도 남쪽, 서해 바깥)
+    [39.5, 132.0],  // 북동쪽 (북한 위, 동해 바깥)
+  ]}
+  maxBoundsViscosity={1.0}
+  style={{ width: '100%', height: '100%' }}
+>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
