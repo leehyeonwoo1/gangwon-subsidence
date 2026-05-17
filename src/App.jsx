@@ -302,8 +302,8 @@ const isInGangwon = (feature) => {
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <MapContainer
   center={gangwonCenter}
-  zoom={8}
-  minZoom={8}
+  zoom={9}
+  minZoom={9}
   maxBounds={[
     [37.0, 127.0],  // 남서쪽: 강원도 남서쪽 경계
     [38.7, 129.6],  // 북동쪽: 강원도 북동쪽 경계
