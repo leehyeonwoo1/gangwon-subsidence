@@ -87,9 +87,26 @@ const openChatSmart = () => {
 }
 
   const matchRegion = (geoName) => {
-    if (!geoName || typeof geoName !== 'string') return null
-    return gangwonRegions.find((r) => r.name === geoName)
+  if (!geoName || typeof geoName !== 'string') return null
+  return gangwonRegions.find((r) => r.name === geoName)
+}
+
+// 폴리곤이 강원도 영역 안에 있는지 검증 (이름 매칭만으론 부족)
+const isInGangwon = (feature) => {
+  // 첫 번째 좌표 추출 (Polygon vs MultiPolygon 둘 다 대응)
+  let firstPoint
+  if (feature.geometry.type === 'Polygon') {
+    firstPoint = feature.geometry.coordinates[0][0]
+  } else if (feature.geometry.type === 'MultiPolygon') {
+    firstPoint = feature.geometry.coordinates[0][0][0]
+  } else {
+    return false
   }
+  
+  const [lng, lat] = firstPoint
+  // 강원도 박스: 위도 37.0~38.7, 경도 127.0~129.6
+  return lat >= 37.0 && lat <= 38.7 && lng >= 127.0 && lng <= 129.6
+}
 
   // ============================================
   // GeoJSON 데이터들
@@ -148,11 +165,13 @@ const openChatSmart = () => {
 
   // 강원도 18개 시·군
   const gangwonMunicipalitiesGeoJSON = {
-    type: 'FeatureCollection',
-    features: koreaMunicipalities.features.filter(
-      (feature) => matchRegion(feature.properties.name) !== null
-    ),
-  }
+  type: 'FeatureCollection',
+  features: koreaMunicipalities.features.filter(
+    (feature) => 
+      matchRegion(feature.properties.name) !== null && 
+      isInGangwon(feature)  // 👈 좌표 검증 추가
+  ),
+}
 
   // 강원도 188개 읍·면·동
   const submunicipalitiesGeoJSON = gangwonSubmunicipalities
@@ -284,10 +303,10 @@ const openChatSmart = () => {
       <MapContainer
   center={gangwonCenter}
   zoom={9}
-  minZoom={7}
+  minZoom={9}
   maxBounds={[
-    [33.0, 124.0],  // 남서쪽 (제주도 남쪽, 서해 바깥)
-    [39.5, 132.0],  // 북동쪽 (북한 위, 동해 바깥)
+    [37.0, 127.0],  // 남서쪽: 강원도 남서쪽 경계
+    [38.7, 129.6],  // 북동쪽: 강원도 북동쪽 경계
   ]}
   maxBoundsViscosity={1.0}
   style={{ width: '100%', height: '100%' }}
