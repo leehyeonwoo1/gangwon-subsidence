@@ -52,6 +52,19 @@ function findParentRegion(feature) {
   return { region: nearestRegion, center }
 }
 
+// 발표 스토리텔링용 - 실제 학술적으로 위험한 읍·면·동
+// 폐광/카르스트/매립지 등 인공적/지질적 위험 요인 있는 곳들
+const specialSubmunicipalities = {
+  '황지동': { velocity: -15.2, reason: '폐광 지역 + 카르스트 지형' },
+  '장성동': { velocity: -13.8, reason: '탄광 침하 이력 보유' },
+  '사북읍': { velocity: -14.5, reason: '폐광 후 지반 안정화 진행 중' },
+  '고한읍': { velocity: -12.3, reason: '폐광 지역 침하 진행' },
+  '상동읍': { velocity: -8.7, reason: '광산 활동 영향 지역' },
+  '도계읍': { velocity: -11.2, reason: '탄광 도시, 채굴 영향' },
+  '천곡동': { velocity: -6.5, reason: '해안 매립지' },
+  '옥계면': { velocity: -5.8, reason: '시멘트 공장 인접 지역' },
+}
+
 // 가짜 침하 데이터 캐싱
 const submunicipalityDataCache = new Map()
 
@@ -66,15 +79,21 @@ export function getSubmunicipalityData(feature) {
   const parent = findParentRegion(feature)
   if (!parent || !parent.region) return null
 
-  const data = {
-    id: code,
-    name: feature.properties.name,
-    parentRegion: parent.region.name,
-    lat: parent.center.lat,
-    lng: parent.center.lng,
-    velocity: generateFakeVelocity(parent.region.velocity),
-    lastUpdated: '2025-04-15',
-  }
+  // 특별 읍·면·동인지 확인
+const name = feature.properties.name
+const special = specialSubmunicipalities[name]
+
+// 데이터 생성
+const data = {
+  id: code,
+  name: feature.properties.name,
+  parentRegion: parent.region.name,
+  lat: parent.center.lat,
+  lng: parent.center.lng,
+  velocity: special ? special.velocity : generateFakeVelocity(parent.region.velocity),
+  reason: special ? special.reason : null,  // 위험 사유 (특별한 곳만)
+  lastUpdated: '2025-04-15',
+}
 
   submunicipalityDataCache.set(code, data)
   return data

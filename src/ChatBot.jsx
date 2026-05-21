@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { gangwonRegions, getRiskLevel, getRiskGuide } from './regions'
+import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 
 function ChatBot({ isOpen, onClose, onRegionSelect }) {
   // 메시지 목록 상태
@@ -103,39 +104,81 @@ function ChatBot({ isOpen, onClose, onRegionSelect }) {
       `• 발견 시점`
   }
 
-  // === 6. 특정 지역 ===
-  const matchedRegion = gangwonRegions.find(r => 
-    question.includes(r.name.replace('시', '').replace('군', ''))
-  )
+  // === 6. 특정 지역 (시·군) ===
+const matchedRegion = gangwonRegions.find(r => 
+  question.includes(r.name.replace('시', '').replace('군', ''))
+)
+
+if (matchedRegion) {
+  const risk = getRiskLevel(matchedRegion.velocity)
+  const guide = getRiskGuide(matchedRegion.velocity)
+  const isDetailed = q.includes('자세히') || q.includes('상세') || q.includes('더')
   
-  if (matchedRegion) {
-    const risk = getRiskLevel(matchedRegion.velocity)
-    const guide = getRiskGuide(matchedRegion.velocity)
-    const isDetailed = q.includes('자세히') || q.includes('상세') || q.includes('더')
+  let response = `${risk.emoji} **${matchedRegion.name}** 분석\n\n` +
+    `• 위험 등급: **${risk.grade}**\n` +
+    `• 침하 속도: ${matchedRegion.velocity} mm/year\n` +
+    `• 최종 갱신: ${matchedRegion.lastUpdated}\n\n` +
+    `📋 **상황:**\n${guide.summary}\n\n`
+  
+  if (isDetailed || matchedRegion.velocity <= -5) {
+    response += `🔧 **권장 조치:**\n` +
+      guide.actions.map(a => `• ${a}`).join('\n') + `\n\n`
     
-    let response = `${risk.emoji} **${matchedRegion.name}** 분석\n\n` +
+    if (guide.precautions.length > 0) {
+      response += `⚠️ **주의 사항:**\n` +
+        guide.precautions.map(p => `• ${p}`).join('\n') + `\n\n`
+    }
+    
+    response += `📞 **연락처:**\n` +
+      guide.contacts.map(c => `• ${c.name} (${c.desc}): ${c.phone}`).join('\n')
+  } else {
+    response += `💬 더 자세한 정보는 "${matchedRegion.name} 자세히" 라고 물어보세요.`
+  }
+  
+  return response
+}
+
+// === 7. 특정 읍·면·동 ===
+// 강원도 188개 읍·면·동에서 검색
+const matchedSub = gangwonSubmunicipalities.features.find(f => {
+  const name = f.properties.name
+  // 동/면/읍 글자 제외하고 검색
+  const shortName = name.replace(/(동|면|읍)$/, '')
+  return question.includes(name) || question.includes(shortName)
+})
+
+if (matchedSub) {
+  const subData = getSubmunicipalityData(matchedSub)
+  if (subData) {
+    const risk = getRiskLevel(subData.velocity)
+    const guide = getRiskGuide(subData.velocity)
+    
+    let response = `${risk.emoji} **${subData.name}** 분석\n\n` +
+      `🗺️ ${subData.parentRegion} 소속\n\n` +
       `• 위험 등급: **${risk.grade}**\n` +
-      `• 침하 속도: ${matchedRegion.velocity} mm/year\n` +
-      `• 최종 갱신: ${matchedRegion.lastUpdated}\n\n` +
+      `• 침하 속도: ${subData.velocity} mm/year\n` +
+      `• 최종 갱신: ${subData.lastUpdated}\n\n` +
       `📋 **상황:**\n${guide.summary}\n\n`
     
-    if (isDetailed || matchedRegion.velocity <= -5) {
+    // 특별 사유가 있으면 표시 (황지동, 사북읍 등)
+    if (subData.reason) {
+      response += `📍 **지질학적 요인:**\n${subData.reason}\n\n`
+    }
+    
+    // 위험 수준이면 자세한 조치 안내
+    if (subData.velocity <= -5) {
       response += `🔧 **권장 조치:**\n` +
-        guide.actions.map(a => `• ${a}`).join('\n') + `\n\n`
-      
-      if (guide.precautions.length > 0) {
-        response += `⚠️ **주의 사항:**\n` +
-          guide.precautions.map(p => `• ${p}`).join('\n') + `\n\n`
-      }
-      
-      response += `📞 **연락처:**\n` +
-        guide.contacts.map(c => `• ${c.name} (${c.desc}): ${c.phone}`).join('\n')
+        guide.actions.slice(0, 3).map(a => `• ${a}`).join('\n') + `\n\n` +
+        `📞 **연락처:**\n` +
+        `• ${guide.contacts[0].name}: ${guide.contacts[0].phone}`
     } else {
-      response += `💬 더 자세한 정보는 "${matchedRegion.name} 자세히" 라고 물어보세요.`
+      response += `✅ 안정 범위 내이지만 정기 관찰을 권장합니다.\n\n` +
+        `💬 "${subData.parentRegion} 자세히"로 상위 지역 분석도 가능합니다.`
     }
     
     return response
   }
+}
 
   // === 7. 인사 ===
   if (q.includes('안녕') || q.includes('hi') || q.includes('hello')) {

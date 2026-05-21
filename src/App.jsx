@@ -276,12 +276,10 @@ const isInGangwon = (feature) => {
       })
     })
 
-    layer.on('click', function () {
-      const parentRegion = gangwonRegions.find((r) => r.name === data.parentRegion)
-      if (parentRegion) {
-        selectRegionSmart(parentRegion)
-      }
-    })
+    // 클릭 시: 읍·면·동 자체 정보로 사이드 패널 열기
+layer.on('click', function () {
+  selectRegionSmart(data)  // 읍·면·동 데이터 그대로 전달
+})
 
     const risk = getRiskLevel(data.velocity)
     layer.bindTooltip(
