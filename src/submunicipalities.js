@@ -113,8 +113,30 @@ export function getSubmunicipalityData(feature) {
   }
 
   // code로 부모 시·군 정확 매칭
-  const parentRegion = findParentByCode(code)
-  if (!parentRegion) return null
+  // code로 부모 시·군 정확 매칭
+let parentRegion = findParentByCode(code)
+
+// 백업: code 매칭 실패 시 좌표 기반으로 추정
+if (!parentRegion) {
+  const tempCenter = getCenter(feature)
+  if (tempCenter) {
+    let minDistance = Infinity
+    gangwonRegions.forEach((region) => {
+      const dLat = region.lat - tempCenter.lat
+      const dLng = region.lng - tempCenter.lng
+      const distance = Math.sqrt(dLat * dLat + dLng * dLng)
+      if (distance < minDistance) {
+        minDistance = distance
+        parentRegion = region
+      }
+    })
+  }
+}
+
+// 그래도 못 찾으면 (정말 예외적 케이스) 안전 등급으로 fallback
+if (!parentRegion) {
+  parentRegion = { name: '강원도', velocity: -2.0 }
+}
 
   // 폴리곤 중심점
   const center = getCenter(feature)
