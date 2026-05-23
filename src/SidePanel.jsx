@@ -32,15 +32,17 @@ function SidePanel({ region, onClose, isChatOpen }) {
 
   // 시계열 데이터 생성
   const timeSeriesData = useMemo(() => {
-    return generateTimeSeries(region.velocity, region.id || region.name)
-  }, [region])
+  const result = generateTimeSeries(region.velocity, region.id || region.name)
+  // 안전망: 배열이 아니면 빈 배열 반환
+  return Array.isArray(result) ? result : []
+}, [region])
 
   const chartData = {
-    labels: timeSeriesData.map((d) => d.month),
-    datasets: [
-      {
-        label: '침하량 (mm)',
-        data: timeSeriesData.map((d) => d.displacement),
+  labels: (timeSeriesData || []).map((d) => d.month),
+  datasets: [
+    {
+      label: '침하량 (mm)',
+      data: (timeSeriesData || []).map((d) => d.displacement),
         borderColor: risk.color,
         backgroundColor: `${risk.color}33`,
         tension: 0.3,
@@ -210,14 +212,17 @@ function SidePanel({ region, onClose, isChatOpen }) {
       )}
 
       {/* 그래프 */}
-      <div
-        style={{
-          height: isSubmunicipality ? '180px' : '220px',
-          marginBottom: '12px',
-        }}
-      >
-        <Line data={chartData} options={chartOptions} />
-      </div>
+      {/* 그래프 - 데이터 있을 때만 그림 */}
+{timeSeriesData.length > 0 && (
+  <div
+    style={{
+      height: isSubmunicipality ? '180px' : '220px',
+      marginBottom: '12px',
+    }}
+  >
+    <Line data={chartData} options={chartOptions} />
+  </div>
+)}
 
       {/* 분석 멘트 */}
       <div
