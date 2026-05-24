@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { getRiskLevel, generateTimeSeries } from './regions'
+import { getRiskLevel, generateTimeSeries, getSafetyIndex, getCivicExplanation } from './regions'
 
 ChartJS.register(
   CategoryScale,
@@ -25,30 +25,41 @@ ChartJS.register(
 function SidePanel({ region, onClose, isChatOpen }) {
   if (!region) return null
 
-  // 읍·면·동인지 시·군인지 판별
   const isSubmunicipality = !!region.parentRegion
 
-  const risk = getRiskLevel(region.velocity)
+  // 안전 지수 + 시민용 설명
+  const safety = useMemo(() => getSafetyIndex(region.velocity), [region.velocity])
+  const civic = useMemo(() => getCivicExplanation(region.velocity), [region.velocity])
 
-  // 시계열 데이터 생성
+  // 시계열 데이터
   const timeSeriesData = useMemo(() => {
-  const result = generateTimeSeries(region.velocity, region.id || region.name)
-  // 안전망: 배열이 아니면 빈 배열 반환
-  return Array.isArray(result) ? result : []
-}, [region])
+    const result = generateTimeSeries(region.velocity, region.id || region.name)
+    return Array.isArray(result) ? result : (result?.data ? result : { months: [], data: [] })
+  }, [region])
+
+  // generateTimeSeries가 { months, data } 형식이면 그대로, 배열이면 변환
+  const months = Array.isArray(timeSeriesData) 
+    ? timeSeriesData.map(d => d.month) 
+    : timeSeriesData.months || []
+  const data = Array.isArray(timeSeriesData) 
+    ? timeSeriesData.map(d => d.displacement) 
+    : timeSeriesData.data || []
+
+  // 안전 지수 시계열 (그래프용)
+  const safetyTimeSeries = data.map(v => getSafetyIndex(v).score)
 
   const chartData = {
-  labels: (timeSeriesData || []).map((d) => d.month),
-  datasets: [
-    {
-      label: '침하량 (mm)',
-      data: (timeSeriesData || []).map((d) => d.displacement),
-        borderColor: risk.color,
-        backgroundColor: `${risk.color}33`,
+    labels: months,
+    datasets: [
+      {
+        label: '안전 지수',
+        data: safetyTimeSeries,
+        borderColor: safety.level.color,
+        backgroundColor: `${safety.level.color}33`,
         tension: 0.3,
         pointBackgroundColor: 'white',
-        pointBorderColor: risk.color,
-        pointRadius: isSubmunicipality ? 3 : 4,  // 읍·면·동은 점 살짝 작게
+        pointBorderColor: safety.level.color,
+        pointRadius: isSubmunicipality ? 3 : 4,
         pointBorderWidth: 2,
       },
     ],
@@ -61,22 +72,30 @@ function SidePanel({ region, onClose, isChatOpen }) {
       legend: { display: false },
       title: {
         display: true,
-        text: isSubmunicipality ? '최근 12개월 침하 추세 (참고용)' : '최근 12개월 침하 추세',
+        text: '📊 최근 12개월 안전 지수 변화',
         font: { size: isSubmunicipality ? 11 : 13, weight: '600' },
         color: '#374151',
+      },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `안전 지수: ${ctx.parsed.y.toFixed(1)}/10`,
+        },
       },
     },
     scales: {
       x: {
-        title: { display: true, text: '월', font: { size: 10 } },
         grid: { display: false },
         ticks: { font: { size: 9 } },
       },
       y: {
-        title: { display: true, text: '침하량 (mm)', font: { size: 10 } },
+        min: 0,
+        max: 10,
+        title: { display: true, text: '안전 지수 (0~10점)', font: { size: 10 } },
         grid: { color: '#f3f4f6' },
-        ticks: { font: { size: 9 } },
-        reverse: true,
+        ticks: { 
+          font: { size: 9 },
+          stepSize: 2,
+        },
       },
     },
   }
@@ -88,7 +107,7 @@ function SidePanel({ region, onClose, isChatOpen }) {
         position: 'absolute',
         top: '20px',
         right: '20px',
-        width: '360px',
+        width: '380px',
         maxHeight: 'calc(100vh - 40px)',
         background: 'white',
         boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
@@ -98,7 +117,6 @@ function SidePanel({ region, onClose, isChatOpen }) {
         boxSizing: 'border-box',
         borderRadius: '16px',
         transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-        // 읍·면·동일 때 살짝 다른 배경 (구분용)
         border: isSubmunicipality ? '2px solid #f3f4f6' : 'none',
       }}
     >
@@ -120,7 +138,7 @@ function SidePanel({ region, onClose, isChatOpen }) {
         ×
       </button>
 
-      {/* 헤더 - 읍·면·동이면 부모 시·군도 표시 */}
+      {/* 헤더 */}
       <div style={{ marginBottom: '16px' }}>
         {isSubmunicipality && (
           <div
@@ -143,51 +161,93 @@ function SidePanel({ region, onClose, isChatOpen }) {
             letterSpacing: '-0.5px',
           }}
         >
-          {risk.emoji} {region.name}
+          {safety.level.emoji} {region.name}
         </h2>
+      </div>
+
+      {/* 🌟 안전 지수 메인 카드 */}
+      <div
+        style={{
+          background: `linear-gradient(135deg, ${safety.level.color}15, ${safety.level.color}05)`,
+          border: `2px solid ${safety.level.color}33`,
+          padding: '20px',
+          borderRadius: '14px',
+          marginBottom: '16px',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px', fontWeight: '500' }}>
+          안전 지수
+        </div>
+        <div
+          style={{
+            fontSize: '48px',
+            fontWeight: '800',
+            color: safety.level.color,
+            lineHeight: '1',
+            letterSpacing: '-2px',
+          }}
+        >
+          {safety.score}
+          <span style={{ fontSize: '20px', color: '#9ca3af', marginLeft: '4px', fontWeight: '600' }}>
+            / 10
+          </span>
+        </div>
         <div
           style={{
             display: 'inline-block',
-            marginTop: '8px',
-            padding: '4px 10px',
-            background: `${risk.color}22`,
-            color: risk.color,
-            borderRadius: '6px',
+            marginTop: '10px',
+            padding: '4px 12px',
+            background: safety.level.color,
+            color: 'white',
+            borderRadius: '20px',
             fontSize: '12px',
             fontWeight: '700',
           }}
         >
-          {risk.grade} 등급
+          {safety.level.label}
+        </div>
+        <div style={{ fontSize: '13px', color: '#374151', marginTop: '10px', fontWeight: '500' }}>
+          {safety.level.description}
         </div>
       </div>
 
-      {/* 침하 속도 */}
+      {/* 시민 안내 박스 */}
       <div
         style={{
-          background: '#f9fafb',
-          padding: '14px',
+          background: '#fefce8',
+          border: '1px solid #fde047',
+          padding: '12px',
+          borderRadius: '10px',
+          marginBottom: '12px',
+        }}
+      >
+        <div style={{ fontSize: '11px', color: '#92400e', fontWeight: '700', marginBottom: '6px' }}>
+          👤 시민 안내
+        </div>
+        <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
+          {safety.level.civicMessage}
+        </div>
+      </div>
+
+      {/* 공공기관용 박스 */}
+      <div
+        style={{
+          background: '#eff6ff',
+          border: '1px solid #93c5fd',
+          padding: '12px',
           borderRadius: '10px',
           marginBottom: '16px',
         }}
       >
-        <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
-          현재 침하 속도
+        <div style={{ fontSize: '11px', color: '#1e3a8a', fontWeight: '700', marginBottom: '6px' }}>
+          🏛️ 공공기관용 분석
         </div>
-        <div
-          style={{
-            fontSize: '28px',
-            fontWeight: '700',
-            color: risk.color,
-            letterSpacing: '-1px',
-          }}
-        >
-          {region.velocity}
-          <span style={{ fontSize: '14px', color: '#6b7280', marginLeft: '4px', fontWeight: '500' }}>
-            mm/year
-          </span>
+        <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
+          {safety.level.officialMessage}
         </div>
-        <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
-          최종 갱신: {region.lastUpdated}
+        <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px', borderTop: '1px solid #dbeafe', paddingTop: '8px' }}>
+          기술 데이터: 침하 속도 <strong>{region.velocity} mm/year</strong> · 최종 갱신 {region.lastUpdated}
         </div>
       </div>
 
@@ -195,8 +255,8 @@ function SidePanel({ region, onClose, isChatOpen }) {
       {isSubmunicipality && region.reason && (
         <div
           style={{
-            background: `${risk.color}11`,
-            border: `1px solid ${risk.color}44`,
+            background: `${safety.level.color}11`,
+            border: `1px solid ${safety.level.color}44`,
             padding: '12px',
             borderRadius: '8px',
             marginBottom: '16px',
@@ -212,40 +272,18 @@ function SidePanel({ region, onClose, isChatOpen }) {
       )}
 
       {/* 그래프 */}
-      {/* 그래프 - 데이터 있을 때만 그림 */}
-{timeSeriesData.length > 0 && (
-  <div
-    style={{
-      height: isSubmunicipality ? '180px' : '220px',
-      marginBottom: '12px',
-    }}
-  >
-    <Line data={chartData} options={chartOptions} />
-  </div>
-)}
+      {months.length > 0 && (
+        <div
+          style={{
+            height: isSubmunicipality ? '180px' : '220px',
+            marginBottom: '12px',
+          }}
+        >
+          <Line data={chartData} options={chartOptions} />
+        </div>
+      )}
 
-      {/* 분석 멘트 */}
-      <div
-        style={{
-          background: '#f9fafb',
-          padding: '12px',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: '#374151',
-          lineHeight: '1.6',
-        }}
-      >
-        <strong>분석:</strong>{' '}
-        {region.velocity <= -10
-          ? '빠른 침하가 진행 중입니다. 정밀 조사 권장.'
-          : region.velocity <= -5
-          ? '경고 수준 침하. 지속 관찰이 필요합니다.'
-          : region.velocity <= -2
-          ? '경미한 침하가 관측되나 안정 범위 내에 있습니다.'
-          : '안정적인 지반 상태를 유지하고 있습니다.'}
-      </div>
-
-      {/* 읍·면·동이면 부모 시·군 보기 안내 */}
+      {/* 읍·면·동이면 부모 시·군 안내 */}
       {isSubmunicipality && (
         <div
           style={{

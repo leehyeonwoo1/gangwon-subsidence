@@ -471,12 +471,15 @@ layer.on('click', function () {
         }}
       >
         <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '13px', letterSpacing: '-0.3px' }}>
-          지반침하 위험도
-        </div>
-        <div>🔴 위험 (≤ -10 mm/year)</div>
-        <div>🟠 경고 (-10 ~ -5)</div>
-        <div>🟡 주의 (-5 ~ -2)</div>
-        <div>🟢 안전 (-2 이상)</div>
+  안전 지수 (0~10점)
+</div>
+<div>🔴 위험 (0~2점)</div>
+<div>🟠 경고 (2~4점)</div>
+<div>🟡 주의 (4~6점)</div>
+<div>🟢 양호/안전 (6점 이상)</div>
+<div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>
+  높을수록 안전합니다
+</div>
       </div>
 
       {/* 좌측 상단 제목 + 모드 표시 */}

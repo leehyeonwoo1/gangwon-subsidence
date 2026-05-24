@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { gangwonRegions, getRiskLevel, getRiskGuide } from './regions'
+import { gangwonRegions, getRiskLevel, getRiskGuide, getSafetyIndex, getCivicExplanation } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 
 function ChatBot({ isOpen, onClose, onRegionSelect }) {
@@ -26,24 +26,21 @@ function ChatBot({ isOpen, onClose, onRegionSelect }) {
   const q = question.toLowerCase()
 
   // === 1. 가장 위험한 지역 ===
-  if (q.includes('가장 위험') || q.includes('제일 위험') || q.includes('위험한 지역')) {
-    const sorted = [...gangwonRegions].sort((a, b) => a.velocity - b.velocity)
-    const top3 = sorted.slice(0, 3)
-    const top = top3[0]
-    const guide = getRiskGuide(top.velocity)
+ if (q.includes('가장 위험') || q.includes('제일 위험') || q.includes('위험한 지역')) {
+  const sorted = [...gangwonRegions].sort((a, b) => a.velocity - b.velocity)
+  const top3 = sorted.slice(0, 3)
+  const top = top3[0]
+  const topSafety = getSafetyIndex(top.velocity)
 
-    return `🚨 강원도 침하 위험 TOP 3\n\n` +
-      top3.map((r, i) => {
-        const risk = getRiskLevel(r.velocity)
-        return `${i + 1}. ${risk.emoji} **${r.name}**: ${r.velocity} mm/year (${risk.grade})`
-      }).join('\n') +
-      `\n\n📍 **${top.name} 분석:**\n${guide.summary}\n\n` +
-      `🔧 **권장 조치:**\n` +
-      guide.actions.slice(0, 2).map(a => `• ${a}`).join('\n') +
-      `\n\n📞 **${top.name} 거주민이라면:**\n` +
-      `• ${guide.contacts[0].name}: ${guide.contacts[0].phone}\n` +
-      `\n💬 "${top.name} 자세히" 라고 물어보면 더 자세한 정보 제공합니다.`
-  }
+  return `🚨 강원도에서 가장 조심해야 할 지역 TOP 3\n\n` +
+    top3.map((r, i) => {
+      const s = getSafetyIndex(r.velocity)
+      return `${i + 1}. ${s.level.emoji} **${r.name}** — 안전 지수 ${s.score}/10 (${s.level.label})`
+    }).join('\n') +
+    `\n\n📍 **${top.name}은요:**\n${topSafety.level.description}.\n\n` +
+    `💡 ${topSafety.level.civicMessage}\n\n` +
+    `💬 "${top.name} 자세히"라고 물어보면 더 자세히 알려드려요.`
+}
 
   // === 2. 안전한 지역 ===
   if (q.includes('안전한 지역') || q.includes('안정')) {
@@ -56,20 +53,22 @@ function ChatBot({ isOpen, onClose, onRegionSelect }) {
 
   // === 3. 전체 통계 ===
   if (q.includes('전체') || q.includes('통계') || q.includes('얼마나')) {
-    const dangerous = gangwonRegions.filter(r => r.velocity <= -10)
-    const warning = gangwonRegions.filter(r => r.velocity > -10 && r.velocity <= -5)
-    const caution = gangwonRegions.filter(r => r.velocity > -5 && r.velocity <= -2)
-    const safe = gangwonRegions.filter(r => r.velocity > -2)
-    
-    return `📊 강원도 18개 시·군 침하 현황\n\n` +
-      `🔴 위험: ${dangerous.length}개 ${dangerous.length > 0 ? `(${dangerous.map(r => r.name).join(', ')})` : ''}\n` +
-      `🟠 경고: ${warning.length}개\n` +
-      `🟡 주의: ${caution.length}개\n` +
-      `🟢 안전: ${safe.length}개\n\n` +
-      `📍 **위험 패턴:**\n` +
-      `동남부(태백, 정선) 일대는 과거 폐광 활동과 카르스트 지형 영향으로 침하가 두드러집니다.\n\n` +
-      `💡 본인 거주 지역이 위험 등급이라면 **"○○시 자세히"** 라고 물어보세요.`
-  }
+  const counts = { 위험: 0, 경고: 0, 주의: 0, 양호: 0, 안전: 0 }
+  gangwonRegions.forEach(r => {
+    const s = getSafetyIndex(r.velocity)
+    counts[s.level.label === '매우 안전' ? '안전' : s.level.label]++
+  })
+  
+  return `📊 강원도 18개 시·군 안전 현황\n\n` +
+    `🔴 위험: ${counts['위험']}곳\n` +
+    `🟠 경고: ${counts['경고']}곳\n` +
+    `🟡 주의: ${counts['주의']}곳\n` +
+    `🟢 양호: ${counts['양호']}곳\n` +
+    `🟢 안전: ${counts['안전']}곳\n\n` +
+    `💡 **위험 패턴:**\n` +
+    `동남부의 태백시, 정선군은 과거 폐광 활동으로 땅이 조금씩 가라앉고 있어요.\n\n` +
+    `💬 본인 거주 지역 이름을 물어보면 자세히 알려드려요!`
+}
 
   // === 4. 행동 가이드 / 뭘 해야 해 ===
   if (q.includes('뭘 해') || q.includes('어떻게 해') || q.includes('조치') || q.includes('대처') || q.includes('대응')) {
@@ -110,15 +109,16 @@ const matchedRegion = gangwonRegions.find(r =>
 )
 
 if (matchedRegion) {
-  const risk = getRiskLevel(matchedRegion.velocity)
+  const safety = getSafetyIndex(matchedRegion.velocity)
+  const civic = getCivicExplanation(matchedRegion.velocity)
   const guide = getRiskGuide(matchedRegion.velocity)
   const isDetailed = q.includes('자세히') || q.includes('상세') || q.includes('더')
   
-  let response = `${risk.emoji} **${matchedRegion.name}** 분석\n\n` +
-    `• 위험 등급: **${risk.grade}**\n` +
-    `• 침하 속도: ${matchedRegion.velocity} mm/year\n` +
-    `• 최종 갱신: ${matchedRegion.lastUpdated}\n\n` +
-    `📋 **상황:**\n${guide.summary}\n\n`
+  let response = `${safety.level.emoji} **${matchedRegion.name}** 분석\n\n` +
+    `🎯 **안전 지수: ${safety.score} / 10점** (${safety.level.label})\n\n` +
+    `💬 **쉽게 설명하면:**\n${safety.level.description}.\n` +
+    `${civic.speedDescription} 정도예요.\n\n` +
+    `📣 **${matchedRegion.name} 거주민이라면:**\n${safety.level.civicMessage}\n\n`
   
   if (isDetailed || matchedRegion.velocity <= -5) {
     response += `🔧 **권장 조치:**\n` +
@@ -150,15 +150,16 @@ const matchedSub = gangwonSubmunicipalities.features.find(f => {
 if (matchedSub) {
   const subData = getSubmunicipalityData(matchedSub)
   if (subData) {
-    const risk = getRiskLevel(subData.velocity)
+    const safety = getSafetyIndex(subData.velocity)
+    const civic = getCivicExplanation(subData.velocity)
     const guide = getRiskGuide(subData.velocity)
     
-    let response = `${risk.emoji} **${subData.name}** 분석\n\n` +
+    let response = `${safety.level.emoji} **${subData.name}** 분석\n\n` +
       `🗺️ ${subData.parentRegion} 소속\n\n` +
-      `• 위험 등급: **${risk.grade}**\n` +
-      `• 침하 속도: ${subData.velocity} mm/year\n` +
-      `• 최종 갱신: ${subData.lastUpdated}\n\n` +
-      `📋 **상황:**\n${guide.summary}\n\n`
+      `🎯 **안전 지수: ${safety.score} / 10점** (${safety.level.label})\n\n` +
+      `💬 **쉽게 설명하면:**\n${safety.level.description}.\n` +
+      `${civic.speedDescription} 정도예요.\n\n` +
+      `📣 **여기 거주민이라면:**\n${safety.level.civicMessage}\n\n`
     
     // 특별 사유가 있으면 표시 (황지동, 사북읍 등)
     if (subData.reason) {
@@ -392,7 +393,7 @@ if (matchedSub) {
           flexWrap: 'wrap',
         }}
       >
-        {['가장 위험한 지역?', '전체 통계', '뭘 해야 해?', '신고 채널'].map((q) => (
+        {['가장 조심할 곳?', '우리 동네 안전한가요?', '땅이 가라앉으면?', '신고는 어디로?'].map((q) => (
           <button
             key={q}
             className="quick-question-btn"

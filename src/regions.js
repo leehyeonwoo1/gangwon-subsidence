@@ -125,3 +125,113 @@ export function generateTimeSeries(velocity) {
 
   return { months, data }
 }
+// 안전 지수 계산 (0~10점)
+// 시민용 직관적 지표 (높을수록 안전)
+export function getSafetyIndex(velocity) {
+  // 침하/융기 → 0~10점 변환
+  let score
+  
+  if (velocity <= -15) {
+    score = Math.max(0, 2 + (velocity + 15) * 0.4)  // -15~-20: 2~0점
+  } else if (velocity <= -10) {
+    score = 2 + (velocity + 15) * 0.4  // -10~-15: 4~2점
+  } else if (velocity <= -5) {
+    score = 4 + (velocity + 10) * 0.4  // -5~-10: 6~4점
+  } else if (velocity <= -2) {
+    score = 6 + (velocity + 5) * (2/3)  // -2~-5: 8~6점
+  } else if (velocity <= 0) {
+    score = 8 + (velocity + 2) * 0.5  // 0~-2: 9~8점
+  } else {
+    score = Math.min(10, 9 + velocity * 0.2)  // 0 이상: 9~10점
+  }
+  
+  // 0~10 범위로 보장
+  score = Math.max(0, Math.min(10, score))
+  
+  return {
+    score: parseFloat(score.toFixed(1)),
+    level: getSafetyLevel(score),
+  }
+}
+
+// 안전 지수에 따른 레벨 정보
+function getSafetyLevel(score) {
+  if (score >= 8) {
+    return {
+      label: '매우 안전',
+      shortLabel: '안전',
+      color: '#16a34a',
+      emoji: '🟢',
+      description: '땅이 거의 움직이지 않아요',
+      civicMessage: '안심하고 생활하셔도 됩니다.',
+      officialMessage: '정상 범위 - 정기 모니터링 유지',
+    }
+  }
+  if (score >= 6) {
+    return {
+      label: '양호',
+      shortLabel: '양호',
+      color: '#65a30d',
+      emoji: '🟢',
+      description: '땅이 아주 천천히 움직이고 있어요',
+      civicMessage: '큰 걱정 없이 생활 가능합니다. 일상 점검만 권장.',
+      officialMessage: '안정 범위 - 분기별 점검 권장',
+    }
+  }
+  if (score >= 4) {
+    return {
+      label: '주의',
+      shortLabel: '주의',
+      color: '#eab308',
+      emoji: '🟡',
+      description: '땅이 조금씩 가라앉고 있어요',
+      civicMessage: '집/건물에 균열이 생기는지 가끔 살펴보세요.',
+      officialMessage: '주의 필요 - 월별 정밀 점검',
+    }
+  }
+  if (score >= 2) {
+    return {
+      label: '경고',
+      shortLabel: '경고',
+      color: '#ea580c',
+      emoji: '🟠',
+      description: '땅이 눈에 띄게 가라앉고 있어요',
+      civicMessage: '집/도로의 균열, 기울어짐을 확인하시고 이상 시 신고하세요.',
+      officialMessage: '경고 - 즉시 정밀 조사 권장, 지속 모니터링 필수',
+    }
+  }
+  return {
+    label: '위험',
+    shortLabel: '위험',
+    color: '#dc2626',
+    emoji: '🔴',
+    description: '땅이 빠르게 가라앉고 있어요',
+    civicMessage: '⚠️ 인근 건물/도로에 균열, 함몰 발견 시 즉시 119 또는 1670-9090에 신고하세요.',
+    officialMessage: '🚨 고위험 - 긴급 정밀 진단 필요, 거주민 안전 조치 검토',
+  }
+}
+
+// 시민용 친근한 설명 생성
+export function getCivicExplanation(velocity) {
+  const safety = getSafetyIndex(velocity)
+  const speed = Math.abs(velocity)
+  
+  // 침하 속도를 일상적인 단위로 (1년에 얼마나 가라앉나)
+  let speedDescription
+  if (speed <= 1) {
+    speedDescription = '거의 움직이지 않아요'
+  } else if (speed <= 3) {
+    speedDescription = `1년에 ${speed.toFixed(1)}mm (손톱 두께보다 얇게)`
+  } else if (speed <= 10) {
+    speedDescription = `1년에 ${speed.toFixed(1)}mm (동전 두께 정도)`
+  } else {
+    speedDescription = `1년에 ${speed.toFixed(1)}mm (눈에 띄는 속도)`
+  }
+  
+  return {
+    safetyIndex: safety.score,
+    level: safety.level,
+    speedDescription,
+    direction: velocity < 0 ? '가라앉음' : (velocity > 0 ? '솟아오름' : '안정'),
+  }
+}
