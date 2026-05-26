@@ -7,6 +7,8 @@ import ChatBot from './ChatBot'
 import koreaProvinces from './korea-provinces.json'
 import koreaMunicipalities from './korea-municipalities.json'
 import './App.css'
+import LandingPage from './LandingPage'
+import Header from './Header'
 
 // ============================================
 // 헬퍼 컴포넌트들
@@ -52,11 +54,10 @@ function ZoomTracker({ onZoomChange }) {
 // ============================================
 
 function App() {
+  // 페이지 전환: 'landing' 또는 'map'
+  const [currentPage, setCurrentPage] = useState('landing')
+  
   const gangwonCenter = [37.8228, 128.1555]
-
-  // ============================================
-  // State 정의
-  // ============================================
   const [selectedRegion, setSelectedRegion] = useState(null)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1300)
@@ -296,8 +297,22 @@ layer.on('click', function () {
   // 렌더링
   // ============================================
 
+  // 랜딩 페이지면 그것만 렌더링
+// 랜딩 페이지면 그것만 렌더링
+if (currentPage === 'landing') {
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <>
+      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+      <LandingPage onStart={() => setCurrentPage('map')} />
+    </>
+  )
+}
+
+// 지도 페이지
+return (
+  <>
+    <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', paddingTop: '60px', boxSizing: 'border-box' }}>
       <MapContainer
   center={gangwonCenter}
   zoom={8}
@@ -516,7 +531,8 @@ layer.on('click', function () {
           {isDetailMode ? '🔍 읍·면·동 단위' : '🗺️ 시·군 단위'}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

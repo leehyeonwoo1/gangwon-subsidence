@@ -145,3 +145,13 @@ body {
   background: rgba(255, 255, 255, 0.92) !important;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
+/* ===== 랜딩 페이지 애니메이션 ===== */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* 랜딩 페이지에서는 body 스크롤 가능하게 */
+body.landing-mode {
+  overflow-y: auto !important;
+}
