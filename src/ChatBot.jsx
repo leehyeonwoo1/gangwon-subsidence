@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { gangwonRegions, getRiskLevel, getRiskGuide, getSafetyIndex, getCivicExplanation } from './regions'
+import { gangwonRegions, getRiskLevel, getRiskGuide, getSafetyIndex, getCivicExplanation, withParticle } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 
 function ChatBot({ isOpen, onClose, onRegionSelect }) {
@@ -102,14 +102,14 @@ function ChatBot({ isOpen, onClose, onRegionSelect }) {
     const topSafety = getSafetyIndex(top.velocity)
 
     return `🚨 강원도에서 가장 조심해야 할 지역 TOP 3\n\n` +
-      top3.map((r, i) => {
-        const s = getSafetyIndex(r.velocity)
-        return `${i + 1}. ${s.level.emoji} **${r.name}** — 안전 지수 ${s.score}/10 (${s.level.label})`
-      }).join('\n') +
-      `\n\n📍 **${top.name}은요:**\n${topSafety.level.description}.\n\n` +
-      `💡 ${topSafety.level.civicMessage}\n\n` +
-      `💬 "${top.name} 자세히"라고 물어보면 더 자세히 알려드려요.`
-  }
+  top3.map((r, i) => {
+    const s = getSafetyIndex(r.velocity)
+    return `${i + 1}. ${s.level.emoji} **${r.name}** — 안전 지수 ${s.score}/10 (${s.level.label})`
+  }).join('\n') +
+  `\n\n📍 **${withParticle(top.name, '은는')} 이런 상태예요:**\n${topSafety.level.description}.\n\n` +
+  `💡 ${topSafety.level.civicMessage}\n\n` +
+  `💬 "${top.name} 자세히"라고 물어보면 더 자세히 알려드려요.`
+}
 
   // === 2. 안전한 지역 ===
   if (matches(intents.safest)) {

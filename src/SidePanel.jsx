@@ -213,43 +213,71 @@ function SidePanel({ region, onClose, isChatOpen }) {
       </div>
 
       {/* 시민 안내 박스 */}
-      <div
-        style={{
-          background: '#fefce8',
-          border: '1px solid #fde047',
-          padding: '12px',
-          borderRadius: '10px',
-          marginBottom: '12px',
-        }}
-      >
-        <div style={{ fontSize: '11px', color: '#92400e', fontWeight: '700', marginBottom: '6px' }}>
-          👤 시민 안내
-        </div>
-        <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
-          {safety.level.civicMessage}
-        </div>
-      </div>
+<div
+  style={{
+    background: '#fefce8',
+    border: '1px solid #fde047',
+    padding: '12px',
+    borderRadius: '10px',
+    marginBottom: '12px',
+  }}
+>
+  <div style={{ fontSize: '11px', color: '#92400e', fontWeight: '700', marginBottom: '6px' }}>
+    👤 시민 안내
+  </div>
+  <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
+    {safety.level.civicMessage}
+  </div>
+  {/* 지역별 추가 정보 */}
+  <div style={{ 
+    fontSize: '12px', 
+    color: '#78350f', 
+    marginTop: '8px',
+    paddingTop: '8px',
+    borderTop: '1px dashed #fde047',
+    lineHeight: '1.5',
+  }}>
+    📌 <strong>{region.name}의 1년 변화:</strong>{' '}
+    {region.velocity < 0 
+      ? `약 ${Math.abs(region.velocity).toFixed(1)}mm씩 가라앉음`
+      : region.velocity > 0
+      ? `약 ${region.velocity.toFixed(1)}mm씩 솟아오름`
+      : '거의 변화 없음'}
+    {' '}({civic.speedDescription})
+  </div>
+</div>
 
-      {/* 공공기관용 박스 */}
-      <div
-        style={{
-          background: '#eff6ff',
-          border: '1px solid #93c5fd',
-          padding: '12px',
-          borderRadius: '10px',
-          marginBottom: '16px',
-        }}
-      >
-        <div style={{ fontSize: '11px', color: '#1e3a8a', fontWeight: '700', marginBottom: '6px' }}>
-          🏛️ 공공기관용 분석
-        </div>
-        <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
-          {safety.level.officialMessage}
-        </div>
-        <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '8px', borderTop: '1px solid #dbeafe', paddingTop: '8px' }}>
-          기술 데이터: 침하 속도 <strong>{region.velocity} mm/year</strong> · 최종 갱신 {region.lastUpdated}
-        </div>
-      </div>
+{/* 공공기관용 박스 */}
+<div
+  style={{
+    background: '#eff6ff',
+    border: '1px solid #93c5fd',
+    padding: '12px',
+    borderRadius: '10px',
+    marginBottom: '16px',
+  }}
+>
+  <div style={{ fontSize: '11px', color: '#1e3a8a', fontWeight: '700', marginBottom: '6px' }}>
+    🏛️ 공공기관용 분석
+  </div>
+  <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
+    {safety.level.officialMessage}
+  </div>
+  {/* 지역별 정밀 데이터 */}
+  <div style={{ 
+    fontSize: '11px', 
+    color: '#6b7280', 
+    marginTop: '8px', 
+    borderTop: '1px solid #dbeafe', 
+    paddingTop: '8px',
+    lineHeight: '1.7',
+  }}>
+    <div>• 침하 속도: <strong style={{ color: '#1f2937' }}>{region.velocity} mm/year</strong></div>
+    <div>• 안전 지수: <strong style={{ color: '#1f2937' }}>{safety.score}/10</strong></div>
+    <div>• 최종 갱신: {region.lastUpdated}</div>
+    {region.parentRegion && <div>• 소속: {region.parentRegion}</div>}
+  </div>
+</div>
 
       {/* 특별 사유 (읍·면·동만) */}
       {isSubmunicipality && region.reason && (

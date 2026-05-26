@@ -235,3 +235,34 @@ export function getCivicExplanation(velocity) {
     direction: velocity < 0 ? '가라앉음' : (velocity > 0 ? '솟아오름' : '안정'),
   }
 }
+// 한국어 조사 처리: 받침 따라 은/는, 이/가, 을/를 자동 선택
+export function withParticle(word, particle) {
+  if (!word || word.length === 0) return word + (particle.charAt(0) || '')
+  
+  const lastChar = word.charCodeAt(word.length - 1)
+  // 한글 범위 (가 ~ 힣)
+  if (lastChar < 0xAC00 || lastChar > 0xD7A3) {
+    // 한글이 아니면 그냥 첫 글자 사용
+    return word + particle.charAt(0)
+  }
+  
+  // 받침이 있는지 계산
+  // (한글 코드 - 0xAC00) % 28 == 0 이면 받침 없음
+  const hasJongseong = (lastChar - 0xAC00) % 28 !== 0
+  
+  // particle: '은는' / '이가' / '을를' / '와과'
+  // 받침 있으면 첫 글자, 없으면 두 번째 글자
+  if (particle === '은는' || particle === '은/는') {
+    return word + (hasJongseong ? '은' : '는')
+  }
+  if (particle === '이가' || particle === '이/가') {
+    return word + (hasJongseong ? '이' : '가')
+  }
+  if (particle === '을를' || particle === '을/를') {
+    return word + (hasJongseong ? '을' : '를')
+  }
+  if (particle === '와과' || particle === '와/과') {
+    return word + (hasJongseong ? '과' : '와')
+  }
+  return word + particle
+}
