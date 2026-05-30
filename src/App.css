@@ -1,16 +1,29 @@
+html {
+  scroll-behavior: smooth;
+}
 /* ===== 기본 리셋 ===== */
 html, body, #root {
-  overflow: hidden;
   width: 100vw;
-  height: 100vh;
   margin: 0;
   padding: 0;
 }
 
+/* 기본: 스크롤 가능 (랜딩 페이지용) */
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;  /* 가로 스크롤만 막음 */
+  overflow-y: auto;    /* 세로 스크롤 허용 */
+}
+
+/* 지도 페이지에서만 스크롤 막기 */
+body.map-mode {
+  overflow: hidden !important;
+  height: 100vh;
+}
+
+body.map-mode #root {
+  height: 100vh;
 }
 
 /* ===== 지도 영역 툴팁 ===== */

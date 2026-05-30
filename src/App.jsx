@@ -57,6 +57,18 @@ function App() {
   // 페이지 전환: 'landing' 또는 'map'
   const [currentPage, setCurrentPage] = useState('landing')
   
+  // 지도 페이지일 때만 body에 스크롤 막는 클래스 추가
+  useEffect(() => {
+    if (currentPage === 'map') {
+      document.body.classList.add('map-mode')
+    } else {
+      document.body.classList.remove('map-mode')
+    }
+    return () => {
+      document.body.classList.remove('map-mode')
+    }
+  }, [currentPage])
+  
   const gangwonCenter = [37.8228, 128.1555]
   const [selectedRegion, setSelectedRegion] = useState(null)
   const [isChatOpen, setIsChatOpen] = useState(false)
