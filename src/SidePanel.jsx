@@ -128,10 +128,10 @@ function SidePanel({ region, onClose, isChatOpen }) {
           : {
               // 💻 데스크톱: 우측 패널 (기존 그대로)
               position: 'absolute',
-              top: '20px',
+              top: '80px',
               right: '20px',
               width: '380px',
-              maxHeight: 'calc(100vh - 40px)',
+              maxHeight: 'calc(100vh - 100px)',
               background: 'white',
               boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
               zIndex: 1000,
