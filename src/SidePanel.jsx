@@ -11,6 +11,7 @@ import {
   Legend,
 } from 'chart.js'
 import { getRiskLevel, generateTimeSeries, getSafetyIndex, getCivicExplanation } from './regions'
+import { useIsMobile } from './useIsMobile'
 
 ChartJS.register(
   CategoryScale,
@@ -23,6 +24,7 @@ ChartJS.register(
 )
 
 function SidePanel({ region, onClose, isChatOpen }) {
+  const isMobile = useIsMobile()
   if (!region) return null
 
   const isSubmunicipality = !!region.parentRegion
@@ -103,23 +105,60 @@ function SidePanel({ region, onClose, isChatOpen }) {
   return (
     <div
       className="side-panel"
-      style={{
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        width: '380px',
-        maxHeight: 'calc(100vh - 40px)',
-        background: 'white',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-        zIndex: 1000,
-        padding: '20px',
-        overflowY: 'auto',
-        boxSizing: 'border-box',
-        borderRadius: '16px',
-        transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-        border: isSubmunicipality ? '2px solid #f3f4f6' : 'none',
-      }}
+      style={
+        isMobile
+          ? {
+              // 📱 모바일: 하단에서 올라오는 시트
+              position: 'fixed',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100%',
+              maxHeight: '70vh',
+              background: 'white',
+              boxShadow: '0 -4px 24px rgba(0,0,0,0.18)',
+              zIndex: 1500,
+              padding: '20px',
+              paddingTop: '28px',
+              overflowY: 'auto',
+              boxSizing: 'border-box',
+              borderRadius: '20px 20px 0 0',
+              border: 'none',
+            }
+          : {
+              // 💻 데스크톱: 우측 패널 (기존 그대로)
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              width: '380px',
+              maxHeight: 'calc(100vh - 40px)',
+              background: 'white',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+              zIndex: 1000,
+              padding: '20px',
+              overflowY: 'auto',
+              boxSizing: 'border-box',
+              borderRadius: '16px',
+              transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+              border: isSubmunicipality ? '2px solid #f3f4f6' : 'none',
+            }
+      }
     >
+      {/* 📱 모바일 손잡이 바 (카톡/배민 느낌) */}
+      {isMobile && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '40px',
+            height: '4px',
+            background: '#d1d5db',
+            borderRadius: '2px',
+          }}
+        />
+      )}
       {/* 닫기 버튼 */}
       <button
         onClick={onClose}
