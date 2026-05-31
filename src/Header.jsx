@@ -1,4 +1,7 @@
+import { useIsMobile } from './useIsMobile'
+
 function Header({ currentPage, onNavigate }) {
+  const isMobile = useIsMobile()
   return (
     <header
       style={{
@@ -14,7 +17,7 @@ function Header({ currentPage, onNavigate }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 24px',
+        padding: isMobile ? '0 14px' : '0 24px',
       }}
     >
       {/* 로고 */}
@@ -28,17 +31,18 @@ function Header({ currentPage, onNavigate }) {
         }}
       >
         <span style={{ fontSize: '24px' }}>🛰️</span>
-        <div>
+       <div>
           <div
             style={{
-              fontSize: '15px',
+              fontSize: isMobile ? '14px' : '15px',
               fontWeight: '700',
               color: '#111827',
               letterSpacing: '-0.3px',
               lineHeight: '1.1',
+              whiteSpace: 'nowrap',
             }}
           >
-            강원도 지반침하 모니터링
+            {isMobile ? '강원도 지반침하' : '강원도 지반침하 모니터링'}
           </div>
           <div
             style={{
@@ -46,9 +50,10 @@ function Header({ currentPage, onNavigate }) {
               color: '#6b7280',
               fontWeight: '500',
               marginTop: '2px',
+              whiteSpace: 'nowrap',
             }}
           >
-            Sentinel-1 SAR · InSAR 분석
+            {isMobile ? 'InSAR 분석' : 'Sentinel-1 SAR · InSAR 분석'}
           </div>
         </div>
       </div>
