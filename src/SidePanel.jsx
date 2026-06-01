@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -24,27 +24,66 @@ ChartJS.register(
 )
 
 function SidePanel({ region, onClose, isChatOpen }) {
+  // ⬇️ 모든 훅은 early return보다 위에 있어야 함 (React 규칙)
   const isMobile = useIsMobile()
-  if (!region) return null
+  const isSubmunicipality = region ? !!region.parentRegion : false
 
-  const isSubmunicipality = !!region.parentRegion
+  // 📱 바텀 시트 높이 (vh 단위). 스냅 포인트: 40(작게) / 88(크게)
+  const SNAP_SMALL = 40
+  const SNAP_LARGE = 88
+  const [sheetHeight, setSheetHeight] = useState(SNAP_SMALL)
+  const dragRef = useRef({ dragging: false, startY: 0, startHeight: 0 })
 
-  // 안전 지수 + 시민용 설명
-  const safety = useMemo(() => getSafetyIndex(region.velocity), [region.velocity])
-  const civic = useMemo(() => getCivicExplanation(region.velocity), [region.velocity])
+  // region이 새로 열릴 때마다 작게(40)에서 시작
+  useEffect(() => {
+    if (region) setSheetHeight(SNAP_SMALL)
+  }, [region])
 
-  // 시계열 데이터
+  // 드래그 시작
+  const handleDragStart = (clientY) => {
+    dragRef.current = { dragging: true, startY: clientY, startHeight: sheetHeight }
+  }
+
+  // 드래그 중: 손가락 움직인 만큼 높이 변경
+  const handleDragMove = (clientY) => {
+    if (!dragRef.current.dragging) return
+    const deltaY = dragRef.current.startY - clientY // 위로 올리면 +
+    const deltaVh = (deltaY / window.innerHeight) * 100
+    let next = dragRef.current.startHeight + deltaVh
+    next = Math.max(15, Math.min(92, next)) // 15~92vh 범위 제한
+    setSheetHeight(next)
+  }
+
+  // 드래그 끝: 가까운 스냅 포인트로 고정 (너무 낮으면 닫기)
+  const handleDragEnd = () => {
+    if (!dragRef.current.dragging) return
+    dragRef.current.dragging = false
+    if (sheetHeight < 28) {
+      onClose() // 충분히 내리면 닫기
+    } else if (sheetHeight < (SNAP_SMALL + SNAP_LARGE) / 2) {
+      setSheetHeight(SNAP_SMALL)
+    } else {
+      setSheetHeight(SNAP_LARGE)
+    }
+  }
+
+  const safety = useMemo(() => getSafetyIndex(region?.velocity ?? 0), [region])
+  const civic = useMemo(() => getCivicExplanation(region?.velocity ?? 0), [region])
+
   const timeSeriesData = useMemo(() => {
-    const result = generateTimeSeries(region.velocity, region.id || region.name)
+    const result = generateTimeSeries(region?.velocity ?? 0, region?.id || region?.name || '')
     return Array.isArray(result) ? result : (result?.data ? result : { months: [], data: [] })
   }, [region])
 
+  // ⬇️ 훅을 다 부른 뒤에 early return
+  if (!region) return null
+
   // generateTimeSeries가 { months, data } 형식이면 그대로, 배열이면 변환
-  const months = Array.isArray(timeSeriesData) 
-    ? timeSeriesData.map(d => d.month) 
+  const months = Array.isArray(timeSeriesData)
+    ? timeSeriesData.map(d => d.month)
     : timeSeriesData.months || []
-  const data = Array.isArray(timeSeriesData) 
-    ? timeSeriesData.map(d => d.displacement) 
+  const data = Array.isArray(timeSeriesData)
+    ? timeSeriesData.map(d => d.displacement)
     : timeSeriesData.data || []
 
   // 안전 지수 시계열 (그래프용)
@@ -94,7 +133,7 @@ function SidePanel({ region, onClose, isChatOpen }) {
         max: 10,
         title: { display: true, text: '안전 지수 (0~10점)', font: { size: 10 } },
         grid: { color: '#f3f4f6' },
-        ticks: { 
+        ticks: {
           font: { size: 9 },
           stepSize: 2,
         },
@@ -108,13 +147,13 @@ function SidePanel({ region, onClose, isChatOpen }) {
       style={
         isMobile
           ? {
-              // 📱 모바일: 하단에서 올라오는 시트
+              // 📱 모바일: 하단에서 올라오는 시트 (드래그로 높이 조절)
               position: 'fixed',
               left: 0,
               right: 0,
               bottom: 0,
               width: '100%',
-              maxHeight: '70vh',
+              height: `${sheetHeight}vh`,
               background: 'white',
               boxShadow: '0 -4px 24px rgba(0,0,0,0.18)',
               zIndex: 1500,
@@ -124,6 +163,8 @@ function SidePanel({ region, onClose, isChatOpen }) {
               boxSizing: 'border-box',
               borderRadius: '20px 20px 0 0',
               border: 'none',
+              transition: dragRef.current.dragging ? 'none' : 'height 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+              touchAction: 'none',
             }
           : {
               // 💻 데스크톱: 우측 패널 (기존 그대로)
@@ -144,21 +185,47 @@ function SidePanel({ region, onClose, isChatOpen }) {
             }
       }
     >
-      {/* 📱 모바일 손잡이 바 (카톡/배민 느낌) */}
+      {/* 📱 모바일 손잡이 바 (드래그 가능) */}
       {isMobile && (
         <div
+          onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
+          onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
+          onTouchEnd={handleDragEnd}
+          onMouseDown={(e) => {
+            handleDragStart(e.clientY)
+            const move = (ev) => handleDragMove(ev.clientY)
+            const up = () => {
+              handleDragEnd()
+              window.removeEventListener('mousemove', move)
+              window.removeEventListener('mouseup', up)
+            }
+            window.addEventListener('mousemove', move)
+            window.addEventListener('mouseup', up)
+          }}
           style={{
             position: 'absolute',
-            top: '10px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '40px',
-            height: '4px',
-            background: '#d1d5db',
-            borderRadius: '2px',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'grab',
+            touchAction: 'none',
           }}
-        />
+        >
+          <div
+            style={{
+              width: '40px',
+              height: '5px',
+              background: '#d1d5db',
+              borderRadius: '3px',
+            }}
+          />
+        </div>
       )}
+
       {/* 닫기 버튼 */}
       <button
         onClick={onClose}
@@ -252,71 +319,71 @@ function SidePanel({ region, onClose, isChatOpen }) {
       </div>
 
       {/* 시민 안내 박스 */}
-<div
-  style={{
-    background: '#fefce8',
-    border: '1px solid #fde047',
-    padding: '12px',
-    borderRadius: '10px',
-    marginBottom: '12px',
-  }}
->
-  <div style={{ fontSize: '11px', color: '#92400e', fontWeight: '700', marginBottom: '6px' }}>
-    👤 시민 안내
-  </div>
-  <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
-    {safety.level.civicMessage}
-  </div>
-  {/* 지역별 추가 정보 */}
-  <div style={{ 
-    fontSize: '12px', 
-    color: '#78350f', 
-    marginTop: '8px',
-    paddingTop: '8px',
-    borderTop: '1px dashed #fde047',
-    lineHeight: '1.5',
-  }}>
-    📌 <strong>{region.name}의 1년 변화:</strong>{' '}
-    {region.velocity < 0 
-      ? `약 ${Math.abs(region.velocity).toFixed(1)}mm씩 가라앉음`
-      : region.velocity > 0
-      ? `약 ${region.velocity.toFixed(1)}mm씩 솟아오름`
-      : '거의 변화 없음'}
-    {' '}({civic.speedDescription})
-  </div>
-</div>
+      <div
+        style={{
+          background: '#fefce8',
+          border: '1px solid #fde047',
+          padding: '12px',
+          borderRadius: '10px',
+          marginBottom: '12px',
+        }}
+      >
+        <div style={{ fontSize: '11px', color: '#92400e', fontWeight: '700', marginBottom: '6px' }}>
+          👤 시민 안내
+        </div>
+        <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
+          {safety.level.civicMessage}
+        </div>
+        {/* 지역별 추가 정보 */}
+        <div style={{
+          fontSize: '12px',
+          color: '#78350f',
+          marginTop: '8px',
+          paddingTop: '8px',
+          borderTop: '1px dashed #fde047',
+          lineHeight: '1.5',
+        }}>
+          📌 <strong>{region.name}의 1년 변화:</strong>{' '}
+          {region.velocity < 0
+            ? `약 ${Math.abs(region.velocity).toFixed(1)}mm씩 가라앉음`
+            : region.velocity > 0
+            ? `약 ${region.velocity.toFixed(1)}mm씩 솟아오름`
+            : '거의 변화 없음'}
+          {' '}({civic.speedDescription})
+        </div>
+      </div>
 
-{/* 공공기관용 박스 */}
-<div
-  style={{
-    background: '#eff6ff',
-    border: '1px solid #93c5fd',
-    padding: '12px',
-    borderRadius: '10px',
-    marginBottom: '16px',
-  }}
->
-  <div style={{ fontSize: '11px', color: '#1e3a8a', fontWeight: '700', marginBottom: '6px' }}>
-    🏛️ 공공기관용 분석
-  </div>
-  <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
-    {safety.level.officialMessage}
-  </div>
-  {/* 지역별 정밀 데이터 */}
-  <div style={{ 
-    fontSize: '11px', 
-    color: '#6b7280', 
-    marginTop: '8px', 
-    borderTop: '1px solid #dbeafe', 
-    paddingTop: '8px',
-    lineHeight: '1.7',
-  }}>
-    <div>• 침하 속도: <strong style={{ color: '#1f2937' }}>{region.velocity} mm/year</strong></div>
-    <div>• 안전 지수: <strong style={{ color: '#1f2937' }}>{safety.score}/10</strong></div>
-    <div>• 최종 갱신: {region.lastUpdated}</div>
-    {region.parentRegion && <div>• 소속: {region.parentRegion}</div>}
-  </div>
-</div>
+      {/* 공공기관용 박스 */}
+      <div
+        style={{
+          background: '#eff6ff',
+          border: '1px solid #93c5fd',
+          padding: '12px',
+          borderRadius: '10px',
+          marginBottom: '16px',
+        }}
+      >
+        <div style={{ fontSize: '11px', color: '#1e3a8a', fontWeight: '700', marginBottom: '6px' }}>
+          🏛️ 공공기관용 분석
+        </div>
+        <div style={{ fontSize: '13px', color: '#1f2937', lineHeight: '1.5' }}>
+          {safety.level.officialMessage}
+        </div>
+        {/* 지역별 정밀 데이터 */}
+        <div style={{
+          fontSize: '11px',
+          color: '#6b7280',
+          marginTop: '8px',
+          borderTop: '1px solid #dbeafe',
+          paddingTop: '8px',
+          lineHeight: '1.7',
+        }}>
+          <div>• 침하 속도: <strong style={{ color: '#1f2937' }}>{region.velocity} mm/year</strong></div>
+          <div>• 안전 지수: <strong style={{ color: '#1f2937' }}>{safety.score}/10</strong></div>
+          <div>• 최종 갱신: {region.lastUpdated}</div>
+          {region.parentRegion && <div>• 소속: {region.parentRegion}</div>}
+        </div>
+      </div>
 
       {/* 특별 사유 (읍·면·동만) */}
       {isSubmunicipality && region.reason && (
