@@ -28,44 +28,143 @@ function SidePanel({ region, onClose, isChatOpen }) {
   const isMobile = useIsMobile()
   const isSubmunicipality = region ? !!region.parentRegion : false
 
-  // 📱 바텀 시트 높이 (vh 단위). 스냅 포인트: 40(작게) / 88(크게)
+  // 📱 바텀 시트 높이 (vh 단위). 스냅 포인트: 40(작게) / 92(크게)
   const SNAP_SMALL = 40
-  const SNAP_LARGE = 88
+  const SNAP_LARGE = 92
   const [sheetHeight, setSheetHeight] = useState(SNAP_SMALL)
   const dragRef = useRef({ dragging: false, startY: 0, startHeight: 0 })
+  const heightRef = useRef(SNAP_SMALL) // 최신 높이를 항상 보관 (클로저 문제 방지)
+  const handleBarRef = useRef(null)
+
+  // sheetHeight가 바뀔 때마다 ref에도 동기화
+  useEffect(() => {
+    heightRef.current = sheetHeight
+  }, [sheetHeight])
 
   // region이 새로 열릴 때마다 작게(40)에서 시작
   useEffect(() => {
-    if (region) setSheetHeight(SNAP_SMALL)
+    if (region) {
+      setSheetHeight(SNAP_SMALL)
+      heightRef.current = SNAP_SMALL
+    }
   }, [region])
 
-  // 드래그 시작
-  const handleDragStart = (clientY) => {
-    dragRef.current = { dragging: true, startY: clientY, startHeight: sheetHeight }
-  }
+ // 📱 손잡이 드래그 리스너 (마운트 시 한 번만 부착)
+  useEffect(() => {
+    const bar = handleBarRef.current
+    if (!bar) return
 
-  // 드래그 중: 손가락 움직인 만큼 높이 변경
-  const handleDragMove = (clientY) => {
-    if (!dragRef.current.dragging) return
-    const deltaY = dragRef.current.startY - clientY // 위로 올리면 +
-    const deltaVh = (deltaY / window.innerHeight) * 100
-    let next = dragRef.current.startHeight + deltaVh
-    next = Math.max(15, Math.min(92, next)) // 15~92vh 범위 제한
-    setSheetHeight(next)
-  }
-
-  // 드래그 끝: 가까운 스냅 포인트로 고정 (너무 낮으면 닫기)
-  const handleDragEnd = () => {
-    if (!dragRef.current.dragging) return
-    dragRef.current.dragging = false
-    if (sheetHeight < 28) {
-      onClose() // 충분히 내리면 닫기
-    } else if (sheetHeight < (SNAP_SMALL + SNAP_LARGE) / 2) {
-      setSheetHeight(SNAP_SMALL)
-    } else {
-      setSheetHeight(SNAP_LARGE)
+    const start = (clientY) => {
+      dragRef.current = {
+        dragging: true,
+        startY: clientY,
+        startHeight: heightRef.current,
+        lastY: clientY,
+        lastTime: Date.now(),
+        velocity: 0, // vh per ms (위로 +)
+      }
     }
-  }
+    const move = (clientY) => {
+      if (!dragRef.current.dragging) return
+      const now = Date.now()
+      const d = dragRef.current
+
+      // 순간 속도 계산 (직전 move 대비)
+      const dt = now - d.lastTime
+      if (dt > 0) {
+        const dyVh = ((d.lastY - clientY) / window.innerHeight) * 100
+        d.velocity = dyVh / dt // 위로 던지면 양수
+      }
+      d.lastY = clientY
+      d.lastTime = now
+
+      const deltaY = d.startY - clientY
+      const deltaVh = (deltaY / window.innerHeight) * 100
+      let next = d.startHeight + deltaVh
+      next = Math.max(15, Math.min(92, next))
+      heightRef.current = next
+      setSheetHeight(next)
+    }
+    const end = () => {
+      if (!dragRef.current.dragging) return
+      dragRef.current.dragging = false
+      const h = heightRef.current
+      const v = dragRef.current.velocity // vh/ms, 위로 +
+      const FLICK = 0.12 // 이 속도 넘으면 "던진 것"으로 판단
+
+      const settle = (target) => {
+        setSheetHeight(target)
+        heightRef.current = target
+      }
+
+      // 1) 빠르게 던진 경우 → 속도 방향대로
+      if (v > FLICK) {
+        // 위로 휙 → 크게 열기
+        settle(SNAP_LARGE)
+        return
+      }
+      if (v < -FLICK) {
+        // 아래로 휙 → 세게 던졌으면 닫기, 아니면 작게
+        if (v < -0.4 || h < SNAP_SMALL) {
+          onClose()
+        } else {
+          settle(SNAP_SMALL)
+        }
+        return
+      }
+
+      // 2) 천천히 놓은 경우 → 가까운 스냅 포인트
+      if (h < 28) {
+        onClose()
+      } else if (h < (SNAP_SMALL + SNAP_LARGE) / 2) {
+        settle(SNAP_SMALL)
+      } else {
+        settle(SNAP_LARGE)
+      }
+    }
+
+    // 터치: 시작은 손잡이에서, 추적은 document 전체에서 (손가락이 벗어나도 따라감)
+    const onTouchStart = (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      start(e.touches[0].clientY)
+    }
+    const onTouchMove = (e) => {
+      if (!dragRef.current.dragging) return
+      e.preventDefault()
+      move(e.touches[0].clientY)
+    }
+    const onTouchEnd = () => {
+      end()
+    }
+
+    // 마우스 (PC 시뮬레이터)
+    const onMouseDown = (e) => {
+      e.preventDefault()
+      start(e.clientY)
+      const mm = (ev) => move(ev.clientY)
+      const mu = () => {
+        end()
+        window.removeEventListener('mousemove', mm)
+        window.removeEventListener('mouseup', mu)
+      }
+      window.addEventListener('mousemove', mm)
+      window.addEventListener('mouseup', mu)
+    }
+
+    // touchstart는 손잡이에만, touchmove/end는 document에 (추적 끊김 방지)
+    bar.addEventListener('touchstart', onTouchStart, { passive: false })
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', onTouchEnd)
+    bar.addEventListener('mousedown', onMouseDown)
+
+    return () => {
+      bar.removeEventListener('touchstart', onTouchStart)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+      bar.removeEventListener('mousedown', onMouseDown)
+    }
+  }, [isMobile, region])
 
   const safety = useMemo(() => getSafetyIndex(region?.velocity ?? 0), [region])
   const civic = useMemo(() => getCivicExplanation(region?.velocity ?? 0), [region])
@@ -164,7 +263,6 @@ function SidePanel({ region, onClose, isChatOpen }) {
               borderRadius: '20px 20px 0 0',
               border: 'none',
               transition: dragRef.current.dragging ? 'none' : 'height 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-              touchAction: 'none',
             }
           : {
               // 💻 데스크톱: 우측 패널 (기존 그대로)
@@ -188,19 +286,8 @@ function SidePanel({ region, onClose, isChatOpen }) {
       {/* 📱 모바일 손잡이 바 (드래그 가능) */}
       {isMobile && (
         <div
-          onTouchStart={(e) => handleDragStart(e.touches[0].clientY)}
-          onTouchMove={(e) => handleDragMove(e.touches[0].clientY)}
-          onTouchEnd={handleDragEnd}
-          onMouseDown={(e) => {
-            handleDragStart(e.clientY)
-            const move = (ev) => handleDragMove(ev.clientY)
-            const up = () => {
-              handleDragEnd()
-              window.removeEventListener('mousemove', move)
-              window.removeEventListener('mouseup', up)
-            }
-            window.addEventListener('mousemove', move)
-            window.addEventListener('mouseup', up)
+          ref={handleBarRef}
+          style={{
           }}
           style={{
             position: 'absolute',

@@ -168,3 +168,10 @@ body.map-mode #root {
 body.landing-mode {
   overflow-y: auto !important;
 }
+/* 지도 폴리곤 클릭 시 생기는 흰색 포커스 테두리 제거 */
+.leaflet-interactive:focus {
+  outline: none !important;
+}
+path.leaflet-interactive {
+  outline: none !important;
+}
