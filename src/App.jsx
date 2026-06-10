@@ -9,6 +9,7 @@ import koreaMunicipalities from './korea-municipalities.json'
 import './App.css'
 import LandingPage from './LandingPage'
 import Header from './Header'
+import Dashboard from './Dashboard'
 
 // ============================================
 // 헬퍼 컴포넌트들
@@ -310,12 +311,20 @@ layer.on('click', function () {
   // ============================================
 
   // 랜딩 페이지면 그것만 렌더링
-// 랜딩 페이지면 그것만 렌더링
 if (currentPage === 'landing') {
   return (
     <>
       <Header currentPage={currentPage} onNavigate={setCurrentPage} />
-      <LandingPage onStart={() => setCurrentPage('map')} />
+      <LandingPage onStart={(dest) => setCurrentPage(dest || 'map')} />
+    </>
+  )
+}
+
+if (currentPage === 'dashboard') {
+  return (
+    <>
+      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+      <Dashboard onNavigate={setCurrentPage} />
     </>
   )
 }

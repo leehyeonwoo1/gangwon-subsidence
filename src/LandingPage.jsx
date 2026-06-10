@@ -124,50 +124,95 @@ function LandingPage({ onStart }) {
             지반 침하 위험도를 0~10점으로 한눈에 확인하세요.
           </p>
 
-          {/* CTA 버튼 */}
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {/* 목적 선택 안내 */}
+          <div style={{ fontSize: '15px', color: '#6b7280', fontWeight: '600', marginBottom: '16px' }}>
+            어떤 목적으로 오셨나요?
+          </div>
+
+          {/* CTA 버튼 - 공공기관용 / 시민용 두 갈래 */}
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {/* 공공기관용 */}
             <button
-              onClick={onStart}
+              onClick={() => onStart('dashboard')}
               style={{
-                background: 'linear-gradient(135deg, #1e40af, #3b82f6)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(135deg, #1e3a8a, #1e40af)',
                 color: 'white',
                 border: 'none',
-                padding: '16px 36px',
-                borderRadius: '12px',
-                fontSize: '16px',
-                fontWeight: '700',
+                padding: '24px 32px',
+                borderRadius: '16px',
                 cursor: 'pointer',
-                boxShadow: '0 8px 24px rgba(59, 130, 246, 0.35)',
+                boxShadow: '0 8px 24px rgba(30, 64, 175, 0.35)',
                 transition: 'all 0.2s',
+                minWidth: '200px',
               }}
               onMouseOver={(e) => {
-                e.target.style.transform = 'translateY(-2px)'
-                e.target.style.boxShadow = '0 12px 28px rgba(59, 130, 246, 0.45)'
+                e.currentTarget.style.transform = 'translateY(-3px)'
+                e.currentTarget.style.boxShadow = '0 14px 30px rgba(30, 64, 175, 0.45)'
               }}
               onMouseOut={(e) => {
-                e.target.style.transform = 'translateY(0)'
-                e.target.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.35)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(30, 64, 175, 0.35)'
               }}
             >
-              🗺️ 우리 동네 확인하기
+              <span style={{ fontSize: '32px' }}>🏛️</span>
+              <span style={{ fontSize: '17px', fontWeight: '700' }}>공공기관용</span>
+              <span style={{ fontSize: '13px', opacity: 0.85, fontWeight: '500' }}>점검 우선순위 받기</span>
             </button>
+
+            {/* 시민용 */}
+            <button
+              onClick={() => onStart('map')}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(135deg, #059669, #10b981)',
+                color: 'white',
+                border: 'none',
+                padding: '24px 32px',
+                borderRadius: '16px',
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
+                transition: 'all 0.2s',
+                minWidth: '200px',
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-3px)'
+                e.currentTarget.style.boxShadow = '0 14px 30px rgba(16, 185, 129, 0.45)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.35)'
+              }}
+            >
+              <span style={{ fontSize: '32px' }}>👤</span>
+              <span style={{ fontSize: '17px', fontWeight: '700' }}>시민용</span>
+              <span style={{ fontSize: '13px', opacity: 0.85, fontWeight: '500' }}>우리 동네 안전 확인</span>
+            </button>
+          </div>
+
+          {/* 어떻게 작동해 - 작은 링크로 */}
+          <div style={{ marginTop: '20px' }}>
             <button
               onClick={() => {
                 document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })
               }}
               style={{
-                background: 'white',
-                color: '#374151',
-                border: '1.5px solid #e5e7eb',
-                padding: '16px 28px',
-                borderRadius: '12px',
-                fontSize: '15px',
-                fontWeight: '600',
+                background: 'none',
+                color: '#6b7280',
+                border: 'none',
+                fontSize: '14px',
+                fontWeight: '500',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
+                textDecoration: 'underline',
               }}
             >
-              어떻게 작동해?
+              어떻게 작동하나요?
             </button>
           </div>
 
