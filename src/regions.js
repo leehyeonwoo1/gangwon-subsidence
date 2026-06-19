@@ -4,26 +4,26 @@
 
 export const gangwonRegions = [
   // 시 (7개)
-  { id: 'chuncheon',  name: '춘천시', lat: 37.8813, lng: 127.7298, velocity: -3.2, lastUpdated: '2025-04-15' },
-  { id: 'wonju',      name: '원주시', lat: 37.3422, lng: 127.9202, velocity: -6.8, lastUpdated: '2025-04-15' },
-  { id: 'gangneung',  name: '강릉시', lat: 37.7519, lng: 128.8761, velocity: -1.5, lastUpdated: '2025-04-15' },
-  { id: 'donghae',    name: '동해시', lat: 37.5247, lng: 129.1143, velocity: -4.7, lastUpdated: '2025-04-15' },
-  { id: 'taebaek',    name: '태백시', lat: 37.1641, lng: 128.9856, velocity: -12.3, lastUpdated: '2025-04-15' },
-  { id: 'sokcho',     name: '속초시', lat: 38.2070, lng: 128.5918, velocity: -2.1, lastUpdated: '2025-04-15' },
-  { id: 'samcheok',   name: '삼척시', lat: 37.4500, lng: 129.1654, velocity: -7.9, lastUpdated: '2025-04-15' },
+  { id: 'chuncheon', name: '춘천시', lat: 37.8813, lng: 127.7298, velocity: -1.8, gsi: 3.5, infra: 0.6, pixelCount: 21067, lastUpdated: '2025-04-15' },
+  { id: 'wonju', name: '원주시', lat: 37.3422, lng: 127.9202, velocity: 50.8, gsi: 5.0, infra: 0.86, pixelCount: 52771, lastUpdated: '2025-04-15' },
+  { id: 'gangneung', name: '강릉시', lat: 37.7519, lng: 128.8761, velocity: 66.4, gsi: 5.2, infra: 0.59, pixelCount: 25356, lastUpdated: '2025-04-15' },
+  { id: 'donghae', name: '동해시', lat: 37.5247, lng: 129.1143, velocity: 76.8, gsi: 5.4, infra: 0.55, pixelCount: 4395, lastUpdated: '2025-04-15' },
+  { id: 'taebaek', name: '태백시', lat: 37.1641, lng: 128.9856, velocity: 73.7, gsi: 5.7, infra: 0.7, pixelCount: 8912, lastUpdated: '2025-04-15' },
+  { id: 'sokcho', name: '속초시', lat: 38.207, lng: 128.5918, velocity: 68.7, gsi: 3.6, infra: 0.13, pixelCount: 417, lastUpdated: '2025-04-15' },
+  { id: 'samcheok', name: '삼척시', lat: 37.45, lng: 129.1654, velocity: 67.8, gsi: 5.3, infra: 0.64, pixelCount: 38996, lastUpdated: '2025-04-15' },
 
   // 군 (11개)
-  { id: 'hongcheon',  name: '홍천군', lat: 37.6970, lng: 127.8889, velocity: -1.8, lastUpdated: '2025-04-15' },
-  { id: 'hoengseong', name: '횡성군', lat: 37.4914, lng: 127.9851, velocity: -2.5, lastUpdated: '2025-04-15' },
-  { id: 'yeongwol',   name: '영월군', lat: 37.1836, lng: 128.4615, velocity: -8.4, lastUpdated: '2025-04-15' },
-  { id: 'pyeongchang',name: '평창군', lat: 37.3706, lng: 128.3902, velocity: -3.6, lastUpdated: '2025-04-15' },
-  { id: 'jeongseon',  name: '정선군', lat: 37.3805, lng: 128.6608, velocity: -11.2, lastUpdated: '2025-04-15' },
-  { id: 'cheorwon',   name: '철원군', lat: 38.1466, lng: 127.3134, velocity: -0.9, lastUpdated: '2025-04-15' },
-  { id: 'hwacheon',   name: '화천군', lat: 38.1062, lng: 127.7081, velocity: -1.2, lastUpdated: '2025-04-15' },
-  { id: 'yanggu',     name: '양구군', lat: 38.1099, lng: 127.9900, velocity: -2.8, lastUpdated: '2025-04-15' },
-  { id: 'inje',       name: '인제군', lat: 38.0697, lng: 128.1707, velocity: -1.7, lastUpdated: '2025-04-15' },
-  { id: 'goseong',    name: '고성군', lat: 38.3806, lng: 128.4677, velocity: -2.3, lastUpdated: '2025-04-15' },
-  { id: 'yangyang',   name: '양양군', lat: 38.0754, lng: 128.6189, velocity: -1.9, lastUpdated: '2025-04-15' },
+  { id: 'hongcheon', name: '홍천군', lat: 37.697, lng: 127.8889, velocity: 1.6, gsi: 3.7, infra: 0.64, pixelCount: 44144, lastUpdated: '2025-04-15' },
+  { id: 'hoengseong', name: '횡성군', lat: 37.4914, lng: 127.9851, velocity: 58.9, gsi: 5.2, infra: 0.78, pixelCount: 48744, lastUpdated: '2025-04-15' },
+  { id: 'yeongwol', name: '영월군', lat: 37.1836, lng: 128.4615, velocity: 19.3, gsi: 3.8, infra: 0.61, pixelCount: 23907, lastUpdated: '2025-04-15' },
+  { id: 'pyeongchang', name: '평창군', lat: 37.3706, lng: 128.3902, velocity: -13.3, gsi: 3.1, infra: 0.56, pixelCount: 28156, lastUpdated: '2025-04-15' },
+  { id: 'jeongseon', name: '정선군', lat: 37.3805, lng: 128.6608, velocity: 16.2, gsi: 4.0, infra: 0.61, pixelCount: 32243, lastUpdated: '2025-04-15' },
+  { id: 'cheorwon', name: '철원군', lat: 38.1466, lng: 127.3134, velocity: 76.5, gsi: 5.9, infra: 0.72, pixelCount: 40364, lastUpdated: '2025-04-15' },
+  { id: 'hwacheon', name: '화천군', lat: 38.1062, lng: 127.7081, velocity: 27.8, gsi: 4.1, infra: 0.64, pixelCount: 28753, lastUpdated: '2025-04-15' },
+  { id: 'yanggu', name: '양구군', lat: 38.1099, lng: 127.99, velocity: -61.1, gsi: 4.8, infra: 0.62, pixelCount: 22928, lastUpdated: '2025-04-15' },
+  { id: 'inje', name: '인제군', lat: 38.0697, lng: 128.1707, velocity: -56.7, gsi: 4.7, infra: 0.6, pixelCount: 54107, lastUpdated: '2025-04-15' },
+  { id: 'goseong', name: '고성군', lat: 38.3806, lng: 128.4677, velocity: 64.9, gsi: 4.3, infra: 0.4, pixelCount: 7363, lastUpdated: '2025-04-15' },
+  { id: 'yangyang', name: '양양군', lat: 38.0754, lng: 128.6189, velocity: 74.9, gsi: 5.2, infra: 0.5, pixelCount: 12517, lastUpdated: '2025-04-15' },
 ]
 
 // 침하 속도에 따라 위험 등급 계산 (지도 색칠용)
@@ -250,10 +250,13 @@ export function getGSIBreakdown(region) {
   }
   const acceleration = Math.abs(velocity) * 0.15 + rand(1) * 1.5
   const coherence = 0.4 + rand(2) * 0.55
-  const landslideProximity = Math.min(1, normalize(Math.abs(velocity), 0, 15) * 0.6 + rand(3) * 0.4)
+  // infra(인프라 근접도)는 팀장 진짜값 사용, 없으면 가짜 생성
+  const landslideProximity = (region.infra !== undefined && region.infra !== null)
+    ? region.infra
+    : Math.min(1, normalize(Math.abs(velocity), 0, 15) * 0.6 + rand(3) * 0.4)
 
   // --- 각 지표를 0~1 위험도로 정규화 ---
-  const nVelocity = normalize(Math.abs(velocity), 0, 15)
+  const nVelocity = normalize(Math.abs(velocity), 0, 80) // 진짜 InSAR 범위(~80mm/yr)에 맞춤
   const nAccel = normalize(acceleration, 0, 4)
   const nCoherence = 1 - coherence
   const nLandslide = landslideProximity
@@ -264,6 +267,11 @@ export function getGSIBreakdown(region) {
   const wCoherence = nCoherence * 0.20
   const wLandslide = nLandslide * 0.25
   const riskScore = wVelocity + wAccel + wCoherence + wLandslide
+
+  // 팀장이 계산한 진짜 GSI가 있으면 그걸 우선 사용 (없으면 공식으로 계산)
+  const gsi = (region.gsi !== undefined && region.gsi !== null)
+    ? parseFloat(region.gsi.toFixed(1))
+    : parseFloat((10 * (1 - riskScore)).toFixed(1))
 
   const gsi = parseFloat((10 * (1 - riskScore)).toFixed(1))
 
@@ -291,7 +299,7 @@ export function getGSIBreakdown(region) {
         value: parseFloat((wCoherence * 100).toFixed(1)), raw: `신뢰도 ${coherence.toFixed(2)}`,
       },
       {
-        label: '산사태 근접도', key: 'landslide', weight: 0.25, fill: nLandslide,
+        label: '인프라 근접도', key: 'landslide', weight: 0.25, fill: nLandslide,
         value: parseFloat((wLandslide * 100).toFixed(1)), raw: `${(landslideProximity * 100).toFixed(0)}%`,
       },
     ],
