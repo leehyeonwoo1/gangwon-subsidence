@@ -1,5 +1,5 @@
 // 강원도 18개 시·군 + 가짜 침하 데이터
-// velocity 단위: mm/year (음수 = 침하)
+// velocity 단위: mm/year (음수 = 침하, 양수 = 융기)
 // 진짜 API 연결되면 이 데이터는 백엔드에서 받아올 예정
 
 export const gangwonRegions = [
@@ -26,14 +26,14 @@ export const gangwonRegions = [
   { id: 'yangyang',   name: '양양군', lat: 38.0754, lng: 128.6189, velocity: -1.9, lastUpdated: '2025-04-15' },
 ]
 
-// 침하 속도에 따라 위험 등급 계산하는 함수
-// 진짜 API 연결돼도 이 함수는 그대로 쓸 거야
+// 침하 속도에 따라 위험 등급 계산 (지도 색칠용)
 export function getRiskLevel(velocity) {
   if (velocity <= -10) return { grade: '위험', color: '#dc2626', emoji: '🔴' }
   if (velocity <= -5)  return { grade: '경고', color: '#ea580c', emoji: '🟠' }
   if (velocity <= -2)  return { grade: '주의', color: '#eab308', emoji: '🟡' }
   return { grade: '안전', color: '#16a34a', emoji: '🟢' }
 }
+
 // 위험 등급별 상세 정보 (행동 가이드, 권장 사항)
 export function getRiskGuide(velocity) {
   if (velocity <= -10) {
@@ -100,68 +100,53 @@ export function getRiskGuide(velocity) {
     ],
   }
 }
-// 시계열 가짜 데이터 생성 함수
-// 진짜 API 연결되면 백엔드에서 받아올 예정 (GET /timeseries)
+
+// 시계열 가짜 데이터 생성 (시민용 그래프)
 export function generateTimeSeries(velocity) {
-  // 최근 12개월치 가짜 데이터 만들기
   const months = [
     '2024-05', '2024-06', '2024-07', '2024-08',
     '2024-09', '2024-10', '2024-11', '2024-12',
     '2025-01', '2025-02', '2025-03', '2025-04',
   ]
-
-  // velocity가 -12.3이면 12개월간 누적 -12.3mm 침하
-  // 매달 조금씩 일정하지 않게 (현실적인 노이즈 추가)
   const monthlyRate = velocity / 12
   let cumulative = 0
   const data = []
-
   for (let i = 0; i < months.length; i++) {
-    // 노이즈: -0.5 ~ +0.5 범위로 살짝 흔들기
     const noise = (Math.random() - 0.5) * 1.0
     cumulative += monthlyRate + noise
     data.push(parseFloat(cumulative.toFixed(2)))
   }
-
   return { months, data }
 }
-// 안전 지수 계산 (0~10점)
-// 시민용 직관적 지표 (높을수록 안전)
+
+// ===== 시민용 안전 지수 (0~10점, 높을수록 안전) =====
+// 시민 화면 전용. 공공기관 화면은 아래 GSI(getGSIBreakdown)를 사용.
 export function getSafetyIndex(velocity) {
-  // 침하/융기 → 0~10점 변환
   let score
-  
   if (velocity <= -15) {
-    score = Math.max(0, 2 + (velocity + 15) * 0.4)  // -15~-20: 2~0점
+    score = Math.max(0, 2 + (velocity + 15) * 0.4)
   } else if (velocity <= -10) {
-    score = 2 + (velocity + 15) * 0.4  // -10~-15: 4~2점
+    score = 2 + (velocity + 15) * 0.4
   } else if (velocity <= -5) {
-    score = 4 + (velocity + 10) * 0.4  // -5~-10: 6~4점
+    score = 4 + (velocity + 10) * 0.4
   } else if (velocity <= -2) {
-    score = 6 + (velocity + 5) * (2/3)  // -2~-5: 8~6점
+    score = 6 + (velocity + 5) * (2 / 3)
   } else if (velocity <= 0) {
-    score = 8 + (velocity + 2) * 0.5  // 0~-2: 9~8점
+    score = 8 + (velocity + 2) * 0.5
   } else {
-    score = Math.min(10, 9 + velocity * 0.2)  // 0 이상: 9~10점
+    score = Math.min(10, 9 + velocity * 0.2)
   }
-  
-  // 0~10 범위로 보장
   score = Math.max(0, Math.min(10, score))
-  
   return {
     score: parseFloat(score.toFixed(1)),
     level: getSafetyLevel(score),
   }
 }
 
-// 안전 지수에 따른 레벨 정보
 function getSafetyLevel(score) {
   if (score >= 8) {
     return {
-      label: '매우 안전',
-      shortLabel: '안전',
-      color: '#16a34a',
-      emoji: '🟢',
+      label: '매우 안전', shortLabel: '안전', color: '#16a34a', emoji: '🟢',
       description: '땅이 거의 움직이지 않아요',
       civicMessage: '안심하고 생활하셔도 됩니다.',
       officialMessage: '정상 범위 - 정기 모니터링 유지',
@@ -169,10 +154,7 @@ function getSafetyLevel(score) {
   }
   if (score >= 6) {
     return {
-      label: '양호',
-      shortLabel: '양호',
-      color: '#65a30d',
-      emoji: '🟢',
+      label: '양호', shortLabel: '양호', color: '#65a30d', emoji: '🟢',
       description: '땅이 아주 천천히 움직이고 있어요',
       civicMessage: '큰 걱정 없이 생활 가능합니다. 일상 점검만 권장.',
       officialMessage: '안정 범위 - 분기별 점검 권장',
@@ -180,10 +162,7 @@ function getSafetyLevel(score) {
   }
   if (score >= 4) {
     return {
-      label: '주의',
-      shortLabel: '주의',
-      color: '#eab308',
-      emoji: '🟡',
+      label: '주의', shortLabel: '주의', color: '#eab308', emoji: '🟡',
       description: '땅이 조금씩 가라앉고 있어요',
       civicMessage: '집/건물에 균열이 생기는지 가끔 살펴보세요.',
       officialMessage: '주의 필요 - 월별 정밀 점검',
@@ -191,32 +170,24 @@ function getSafetyLevel(score) {
   }
   if (score >= 2) {
     return {
-      label: '경고',
-      shortLabel: '경고',
-      color: '#ea580c',
-      emoji: '🟠',
+      label: '경고', shortLabel: '경고', color: '#ea580c', emoji: '🟠',
       description: '땅이 눈에 띄게 가라앉고 있어요',
       civicMessage: '집/도로의 균열, 기울어짐을 확인하시고 이상 시 신고하세요.',
       officialMessage: '경고 - 즉시 정밀 조사 권장, 지속 모니터링 필수',
     }
   }
   return {
-    label: '위험',
-    shortLabel: '위험',
-    color: '#dc2626',
-    emoji: '🔴',
+    label: '위험', shortLabel: '위험', color: '#dc2626', emoji: '🔴',
     description: '땅이 빠르게 가라앉고 있어요',
     civicMessage: '⚠️ 인근 건물/도로에 균열, 함몰 발견 시 즉시 119 또는 1670-9090에 신고하세요.',
     officialMessage: '🚨 고위험 - 긴급 정밀 진단 필요, 거주민 안전 조치 검토',
   }
 }
 
-// 시민용 친근한 설명 생성
+// 시민용 친근한 설명 (침하/융기 자동)
 export function getCivicExplanation(velocity) {
   const safety = getSafetyIndex(velocity)
   const speed = Math.abs(velocity)
-  
-  // 침하 속도를 일상적인 단위로 (1년에 얼마나 가라앉나)
   let speedDescription
   if (speed <= 1) {
     speedDescription = '거의 움직이지 않아요'
@@ -227,7 +198,6 @@ export function getCivicExplanation(velocity) {
   } else {
     speedDescription = `1년에 ${speed.toFixed(1)}mm (눈에 띄는 속도)`
   }
-  
   return {
     safetyIndex: safety.score,
     level: safety.level,
@@ -235,34 +205,107 @@ export function getCivicExplanation(velocity) {
     direction: velocity < 0 ? '가라앉음' : (velocity > 0 ? '솟아오름' : '안정'),
   }
 }
+
 // 한국어 조사 처리: 받침 따라 은/는, 이/가, 을/를 자동 선택
 export function withParticle(word, particle) {
   if (!word || word.length === 0) return word + (particle.charAt(0) || '')
-  
   const lastChar = word.charCodeAt(word.length - 1)
-  // 한글 범위 (가 ~ 힣)
   if (lastChar < 0xAC00 || lastChar > 0xD7A3) {
-    // 한글이 아니면 그냥 첫 글자 사용
     return word + particle.charAt(0)
   }
-  
-  // 받침이 있는지 계산
-  // (한글 코드 - 0xAC00) % 28 == 0 이면 받침 없음
   const hasJongseong = (lastChar - 0xAC00) % 28 !== 0
-  
-  // particle: '은는' / '이가' / '을를' / '와과'
-  // 받침 있으면 첫 글자, 없으면 두 번째 글자
-  if (particle === '은는' || particle === '은/는') {
-    return word + (hasJongseong ? '은' : '는')
-  }
-  if (particle === '이가' || particle === '이/가') {
-    return word + (hasJongseong ? '이' : '가')
-  }
-  if (particle === '을를' || particle === '을/를') {
-    return word + (hasJongseong ? '을' : '를')
-  }
-  if (particle === '와과' || particle === '와/과') {
-    return word + (hasJongseong ? '과' : '와')
-  }
+  if (particle === '은는' || particle === '은/는') return word + (hasJongseong ? '은' : '는')
+  if (particle === '이가' || particle === '이/가') return word + (hasJongseong ? '이' : '가')
+  if (particle === '을를' || particle === '을/를') return word + (hasJongseong ? '을' : '를')
+  if (particle === '와과' || particle === '와/과') return word + (hasJongseong ? '과' : '와')
   return word + particle
+}
+
+// ===== 공공기관용 GSI (Ground Safety Index) — 멘토링 2-4 공식 =====
+// risk_score = |velocity|×0.35 + |acceleration|×0.20 + (1−coherence)×0.20 + 산사태근접도×0.25
+// GSI = 10 × (1 − risk_score)   (높을수록 안전)
+//
+// ⚠️ 현재 velocity 외 지표(acceleration·coherence·landslideProximity)는 시연용 가짜값.
+//    백엔드 InSAR/AI 처리값으로 교체 예정. 교체 시 "가짜값 생성" 블록만 region.xxx로 변경.
+
+const gsiCache = new Map()
+
+function normalize(value, min, max) {
+  const v = (value - min) / (max - min)
+  return Math.max(0, Math.min(1, v))
+}
+
+export function getGSIBreakdown(region) {
+  const key = region.id || region.name
+  if (gsiCache.has(key)) return gsiCache.get(key)
+
+  const velocity = region.velocity
+
+  // --- 가짜값 생성 (velocity 기반, 지역마다 고정 시드) ---
+  let seed = 0
+  for (let i = 0; i < key.length; i++) seed += key.charCodeAt(i)
+  const rand = (offset) => {
+    const x = Math.sin(seed + offset) * 10000
+    return x - Math.floor(x)
+  }
+  const acceleration = Math.abs(velocity) * 0.15 + rand(1) * 1.5
+  const coherence = 0.4 + rand(2) * 0.55
+  const landslideProximity = Math.min(1, normalize(Math.abs(velocity), 0, 15) * 0.6 + rand(3) * 0.4)
+
+  // --- 각 지표를 0~1 위험도로 정규화 ---
+  const nVelocity = normalize(Math.abs(velocity), 0, 15)
+  const nAccel = normalize(acceleration, 0, 4)
+  const nCoherence = 1 - coherence
+  const nLandslide = landslideProximity
+
+  // --- 가중합 (멘토 공식) ---
+  const wVelocity = nVelocity * 0.35
+  const wAccel = nAccel * 0.20
+  const wCoherence = nCoherence * 0.20
+  const wLandslide = nLandslide * 0.25
+  const riskScore = wVelocity + wAccel + wCoherence + wLandslide
+
+  const gsi = parseFloat((10 * (1 - riskScore)).toFixed(1))
+
+  const result = {
+    gsi,
+    raw: {
+      velocity,
+      acceleration: parseFloat(acceleration.toFixed(2)),
+      coherence: parseFloat(coherence.toFixed(2)),
+      landslideProximity: parseFloat(landslideProximity.toFixed(2)),
+    },
+    // fill = 정규화 위험도(0~1) → 막대 길이. value = 가중 기여도(%).
+    contributions: [
+      {
+        label: velocity < 0 ? '침하 속도' : velocity > 0 ? '융기 속도' : '수직 변위',
+        key: 'velocity', weight: 0.35, fill: nVelocity,
+        value: parseFloat((wVelocity * 100).toFixed(1)), raw: `${velocity} mm/yr`,
+      },
+      {
+        label: '가속도', key: 'acceleration', weight: 0.20, fill: nAccel,
+        value: parseFloat((wAccel * 100).toFixed(1)), raw: `${acceleration.toFixed(2)} mm/yr²`,
+      },
+      {
+        label: '신호 불확실성', key: 'coherence', weight: 0.20, fill: nCoherence,
+        value: parseFloat((wCoherence * 100).toFixed(1)), raw: `신뢰도 ${coherence.toFixed(2)}`,
+      },
+      {
+        label: '산사태 근접도', key: 'landslide', weight: 0.25, fill: nLandslide,
+        value: parseFloat((wLandslide * 100).toFixed(1)), raw: `${(landslideProximity * 100).toFixed(0)}%`,
+      },
+    ],
+    lowConfidence: coherence < 0.5,
+  }
+
+  gsiCache.set(key, result)
+  return result
+}
+
+// RF 4등급 분류 (멘토 2-4 경계: 8+ 안정 / 6~8 주의 / 4~6 경계 / 4미만 위험)
+export function getRFGrade(gsi) {
+  if (gsi >= 8) return { label: '안정', color: '#16a34a', emoji: '🟢' }
+  if (gsi >= 6) return { label: '주의', color: '#eab308', emoji: '🟡' }
+  if (gsi >= 4) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  return { label: '위험', color: '#dc2626', emoji: '🔴' }
 }
