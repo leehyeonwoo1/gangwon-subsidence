@@ -273,8 +273,6 @@ export function getGSIBreakdown(region) {
     ? parseFloat(region.gsi.toFixed(1))
     : parseFloat((10 * (1 - riskScore)).toFixed(1))
 
-  const gsi = parseFloat((10 * (1 - riskScore)).toFixed(1))
-
   const result = {
     gsi,
     raw: {
