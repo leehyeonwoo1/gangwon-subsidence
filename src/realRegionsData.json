@@ -1,0 +1,200 @@
+[
+  {
+    "id": "yangyang",
+    "name": "양양군",
+    "lat": 38.0019,
+    "lng": 128.5981,
+    "velocity": 50.1,
+    "gsi": 4.3,
+    "infra": 0.41,
+    "pixelCount": 174674,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "goseong",
+    "name": "고성군",
+    "lat": 38.374,
+    "lng": 128.4021,
+    "velocity": 61.0,
+    "gsi": 4.7,
+    "infra": 0.37,
+    "pixelCount": 186486,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "inje",
+    "name": "인제군",
+    "lat": 38.0649,
+    "lng": 128.2648,
+    "velocity": -17.0,
+    "gsi": 2.3,
+    "infra": 0.29,
+    "pixelCount": 408087,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "yanggu",
+    "name": "양구군",
+    "lat": 38.1897,
+    "lng": 127.9954,
+    "velocity": -1.9,
+    "gsi": 2.9,
+    "infra": 0.33,
+    "pixelCount": 174872,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "hwacheon",
+    "name": "화천군",
+    "lat": 38.1584,
+    "lng": 127.6896,
+    "velocity": -7.4,
+    "gsi": 1.9,
+    "infra": 0.32,
+    "pixelCount": 249644,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "cheorwon",
+    "name": "철원군",
+    "lat": 38.2337,
+    "lng": 127.3554,
+    "velocity": 30.6,
+    "gsi": 3.3,
+    "infra": 0.44,
+    "pixelCount": 165307,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "jeongseon",
+    "name": "정선군",
+    "lat": 37.3759,
+    "lng": 128.7415,
+    "velocity": 9.0,
+    "gsi": 2.6,
+    "infra": 0.39,
+    "pixelCount": 316302,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "pyeongchang",
+    "name": "평창군",
+    "lat": 37.5541,
+    "lng": 128.4853,
+    "velocity": -13.5,
+    "gsi": 2.0,
+    "infra": 0.41,
+    "pixelCount": 370675,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "yeongwol",
+    "name": "영월군",
+    "lat": 37.2003,
+    "lng": 128.5043,
+    "velocity": 6.3,
+    "gsi": 2.4,
+    "infra": 0.44,
+    "pixelCount": 245979,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "hoengseong",
+    "name": "횡성군",
+    "lat": 37.5069,
+    "lng": 128.0799,
+    "velocity": 8.9,
+    "gsi": 2.5,
+    "infra": 0.5,
+    "pixelCount": 237323,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "hongcheon",
+    "name": "홍천군",
+    "lat": 37.7421,
+    "lng": 128.0768,
+    "velocity": -7.5,
+    "gsi": 2.5,
+    "infra": 0.42,
+    "pixelCount": 435049,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "samcheok",
+    "name": "삼척시",
+    "lat": 37.2751,
+    "lng": 129.1242,
+    "velocity": 22.2,
+    "gsi": 3.0,
+    "infra": 0.43,
+    "pixelCount": 271492,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "sokcho",
+    "name": "속초시",
+    "lat": 38.1737,
+    "lng": 128.5212,
+    "velocity": 79.8,
+    "gsi": 6.1,
+    "infra": 0.48,
+    "pixelCount": 29938,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "taebaek",
+    "name": "태백시",
+    "lat": 37.1702,
+    "lng": 128.9823,
+    "velocity": 51.0,
+    "gsi": 4.2,
+    "infra": 0.5,
+    "pixelCount": 48763,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "donghae",
+    "name": "동해시",
+    "lat": 37.5047,
+    "lng": 129.0597,
+    "velocity": 45.1,
+    "gsi": 4.9,
+    "infra": 0.47,
+    "pixelCount": 52554,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "gangneung",
+    "name": "강릉시",
+    "lat": 37.7066,
+    "lng": 128.8352,
+    "velocity": 46.8,
+    "gsi": 4.3,
+    "infra": 0.49,
+    "pixelCount": 289700,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "wonju",
+    "name": "원주시",
+    "lat": 37.3053,
+    "lng": 127.9341,
+    "velocity": 4.5,
+    "gsi": 3.4,
+    "infra": 0.57,
+    "pixelCount": 199664,
+    "lastUpdated": "2026-06-21"
+  },
+  {
+    "id": "chuncheon",
+    "name": "춘천시",
+    "lat": 37.8875,
+    "lng": 127.7424,
+    "velocity": 10.4,
+    "gsi": 3.4,
+    "infra": 0.46,
+    "pixelCount": 257798,
+    "lastUpdated": "2026-06-21"
+  }
+]
