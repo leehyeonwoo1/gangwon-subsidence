@@ -170,7 +170,7 @@ function SidePanel({ region, onClose, isChatOpen }) {
   const civic = useMemo(() => getCivicExplanation(region?.velocity ?? 0), [region])
 
   const timeSeriesData = useMemo(() => {
-    const result = generateTimeSeries(region?.velocity ?? 0, region?.id || region?.name || '')
+    const result = generateTimeSeries(region?.id || region?.name || '', region?.velocity ?? 0)
     return Array.isArray(result) ? result : (result?.data ? result : { months: [], data: [] })
   }, [region])
 

@@ -3,6 +3,7 @@
 // gsi_pixels.csv(InSAR 기반 GSI v0.7, 9개 날짜 제외 버전)를 시군구 경계로 집계한 실측 데이터.
 // build_real_data.py로 생성 — 갱신하려면 그 스크립트를 다시 실행할 것.
 import realRegionsData from './realRegionsData.json'
+import realTimeSeriesData from './realTimeSeriesData.json'
 
 export const gangwonRegions = realRegionsData
 
@@ -81,12 +82,19 @@ export function getRiskGuide(velocity) {
   }
 }
 
-// 시계열 가짜 데이터 생성 (시민용 그래프)
-export function generateTimeSeries(velocity) {
+// 시계열 (시민용 그래프)
+// timeseries.h5(InSAR 누적변위, 9개 날짜 제외 버전)를 시군/읍면동 경계로 월별 집계한
+// 실측 데이터(realTimeSeriesData.json, build_real_timeseries.py로 생성). 키는 시군은
+// id(예: 'inje'), 읍면동은 7자리 code. 매칭되는 실측값이 없으면 velocity 기반 가짜값으로 fallback.
+export function generateTimeSeries(key, velocity = 0) {
+  const real = realTimeSeriesData[key]
+  if (real) return real
+
+  // fallback: 실측 데이터가 없는 일부 읍면동(예: 태백시 일부 동)용 가짜 시계열
   const months = [
-    '2024-05', '2024-06', '2024-07', '2024-08',
-    '2024-09', '2024-10', '2024-11', '2024-12',
-    '2025-01', '2025-02', '2025-03', '2025-04',
+    '2025-05', '2025-06', '2025-07', '2025-08',
+    '2025-09', '2025-10', '2025-11', '2025-12',
+    '2026-01', '2026-02', '2026-03', '2026-04',
   ]
   const monthlyRate = velocity / 12
   let cumulative = 0
