@@ -28,9 +28,10 @@ export const gangwonRegions = [
 
 // 침하 속도에 따라 위험 등급 계산 (지도 색칠용)
 export function getRiskLevel(velocity) {
-  if (velocity <= -10) return { grade: '위험', color: '#dc2626', emoji: '🔴' }
-  if (velocity <= -5)  return { grade: '경고', color: '#ea580c', emoji: '🟠' }
-  if (velocity <= -2)  return { grade: '주의', color: '#eab308', emoji: '🟡' }
+  const abs = Math.abs(velocity) // 침하든 융기든 움직임의 크기로 판단
+  if (abs >= 60) return { grade: '위험', color: '#dc2626', emoji: '🔴' }
+  if (abs >= 35) return { grade: '경고', color: '#ea580c', emoji: '🟠' }
+  if (abs >= 15) return { grade: '주의', color: '#eab308', emoji: '🟡' }
   return { grade: '안전', color: '#16a34a', emoji: '🟢' }
 }
 
@@ -122,21 +123,12 @@ export function generateTimeSeries(velocity) {
 // ===== 시민용 안전 지수 (0~10점, 높을수록 안전) =====
 // 시민 화면 전용. 공공기관 화면은 아래 GSI(getGSIBreakdown)를 사용.
 export function getSafetyIndex(velocity) {
-  let score
-  if (velocity <= -15) {
-    score = Math.max(0, 2 + (velocity + 15) * 0.4)
-  } else if (velocity <= -10) {
-    score = 2 + (velocity + 15) * 0.4
-  } else if (velocity <= -5) {
-    score = 4 + (velocity + 10) * 0.4
-  } else if (velocity <= -2) {
-    score = 6 + (velocity + 5) * (2 / 3)
-  } else if (velocity <= 0) {
-    score = 8 + (velocity + 2) * 0.5
-  } else {
-    score = Math.min(10, 9 + velocity * 0.2)
-  }
+  // 침하든 융기든, 움직임의 크기(절댓값)로 안전도 판단
+  // 0mm/yr(안 움직임) = 10점, 80mm/yr 이상 = 0점
+  const abs = Math.abs(velocity)
+  let score = 10 - (abs / 80) * 10
   score = Math.max(0, Math.min(10, score))
+
   return {
     score: parseFloat(score.toFixed(1)),
     level: getSafetyLevel(score),
