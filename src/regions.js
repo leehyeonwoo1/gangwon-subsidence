@@ -260,10 +260,9 @@ export function getGSIBreakdown(region) {
   const wLandslide = nLandslide * 0.25
   const riskScore = wVelocity + wAccel + wCoherence + wLandslide
 
-  // 팀장이 계산한 진짜 GSI가 있으면 그걸 우선 사용 (없으면 공식으로 계산)
-  const gsi = (region.gsi !== undefined && region.gsi !== null)
-    ? parseFloat(region.gsi.toFixed(1))
-    : parseFloat((10 * (1 - riskScore)).toFixed(1))
+  // ⚠️ 팀장 패치 적용 전까지는 우리 공식으로 계산
+  // 패치 적용 후 → region.gsi 우선 사용으로 되돌리기
+  const gsi = parseFloat((10 * (1 - riskScore)).toFixed(1))
 
   const result = {
     gsi,

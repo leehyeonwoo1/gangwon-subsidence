@@ -1,0 +1,2604 @@
+From ab5b92b0f5620f048f92fac45d0531cd590380b6 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=EC=8B=A0=ED=9D=AC=EC=A2=85?= <jong6772@naver.com>
+Date: Fri, 19 Jun 2026 22:52:12 +0900
+Subject: [PATCH] =?UTF-8?q?feat:=20GSI=20=ED=94=BD=EC=85=80=20=EB=8D=B0?=
+ =?UTF-8?q?=EC=9D=B4=ED=84=B0=EB=A1=9C=20=EC=8B=A4=EC=A0=9C=20=EB=8D=B0?=
+ =?UTF-8?q?=EC=9D=B4=ED=84=B0=20=EC=97=B0=EB=8F=99=20(=EC=8B=9C=EA=B5=B0/?=
+ =?UTF-8?q?=EC=9D=8D=EB=A9=B4=EB=8F=99),=20=EC=A4=91=EB=B3=B5=20=EC=84=A0?=
+ =?UTF-8?q?=EC=96=B8=20=EB=B2=84=EA=B7=B8=20=EB=B0=8F=20=EC=9D=8D=EB=A9=B4?=
+ =?UTF-8?q?=EB=8F=99=20=EC=BD=94=EB=93=9C=20=EB=A7=A4=ED=95=91=20=EB=B2=84?=
+ =?UTF-8?q?=EA=B7=B8=20=EC=88=98=EC=A0=95?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- regions.js: getGSIBreakdown()의 중복 const gsi 선언 제거 (SyntaxError로 빌드 자체가 깨져 있던 문제)
+- gsi_pixels.csv를 시군구/읍면동 경계로 집계해 realRegionsData.json, realSubmunicipalityData.json 생성
+- gangwonRegions를 하드코딩 배열 대신 realRegionsData.json import로 교체
+- submunicipalities.js: getSubmunicipalityData()가 특별 스토리텔링값 > 실측 집계값 > 가짜값 순으로 사용하도록 변경
+- submunicipalities.js: codeToRegionMap의 군 지역 code 매핑 오류 수정 (3208~3218 -> 실제 데이터 기준 3231~3241)
+- acceleration/coherence는 가짜값 유지, Phase 2(실측 coherence·시계열 가속도 연동) 예정 주석 추가
+---
+ src/realRegionsData.json         |  200 +++
+ src/realSubmunicipalityData.json | 2222 ++++++++++++++++++++++++++++++
+ src/regions.js                   |   37 +-
+ src/submunicipalities.js         |   41 +-
+ 4 files changed, 2456 insertions(+), 44 deletions(-)
+
+diff --git a/src/realRegionsData.json b/src/realRegionsData.json
+new file mode 100644
+index 0000000..277f538
+--- /dev/null
++++ b/src/realRegionsData.json
+@@ -0,0 +1,200 @@
++[
++  {
++    "id": "chuncheon",
++    "name": "춘천시",
++    "lat": 37.9132,
++    "lng": 127.75,
++    "velocity": -4.4,
++    "gsi": 3.6,
++    "infra": 0.59,
++    "pixelCount": 22441,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "wonju",
++    "name": "원주시",
++    "lat": 37.3432,
++    "lng": 127.9187,
++    "velocity": 50.5,
++    "gsi": 5.0,
++    "infra": 0.86,
++    "pixelCount": 53009,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "gangneung",
++    "name": "강릉시",
++    "lat": 37.7457,
++    "lng": 128.8612,
++    "velocity": 139.6,
++    "gsi": 8.1,
++    "infra": 0.73,
++    "pixelCount": 148413,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "donghae",
++    "name": "동해시",
++    "lat": 37.5134,
++    "lng": 129.0788,
++    "velocity": 125.8,
++    "gsi": 8.3,
++    "infra": 0.73,
++    "pixelCount": 30855,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "taebaek",
++    "name": "태백시",
++    "lat": 37.1831,
++    "lng": 128.9695,
++    "velocity": 109.1,
++    "gsi": 7.3,
++    "infra": 0.69,
++    "pixelCount": 23158,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "sokcho",
++    "name": "속초시",
++    "lat": 38.1812,
++    "lng": 128.5348,
++    "velocity": 166.5,
++    "gsi": 8.3,
++    "infra": 0.66,
++    "pixelCount": 21563,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "samcheok",
++    "name": "삼척시",
++    "lat": 37.3238,
++    "lng": 129.1513,
++    "velocity": 100.7,
++    "gsi": 7.3,
++    "infra": 0.71,
++    "pixelCount": 96529,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "hongcheon",
++    "name": "홍천군",
++    "lat": 37.7418,
++    "lng": 128.0454,
++    "velocity": -0.9,
++    "gsi": 3.7,
++    "infra": 0.64,
++    "pixelCount": 45204,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "hoengseong",
++    "name": "횡성군",
++    "lat": 37.5069,
++    "lng": 128.0819,
++    "velocity": 59.5,
++    "gsi": 5.3,
++    "infra": 0.78,
++    "pixelCount": 49582,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "yeongwol",
++    "name": "영월군",
++    "lat": 37.1973,
++    "lng": 128.5725,
++    "velocity": 29.7,
++    "gsi": 4.2,
++    "infra": 0.58,
++    "pixelCount": 27377,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "pyeongchang",
++    "name": "평창군",
++    "lat": 37.5394,
++    "lng": 128.493,
++    "velocity": -23.0,
++    "gsi": 3.4,
++    "infra": 0.53,
++    "pixelCount": 31059,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "jeongseon",
++    "name": "정선군",
++    "lat": 37.357,
++    "lng": 128.7426,
++    "velocity": 4.1,
++    "gsi": 4.4,
++    "infra": 0.57,
++    "pixelCount": 38712,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "cheorwon",
++    "name": "철원군",
++    "lat": 38.2268,
++    "lng": 127.3249,
++    "velocity": 88.4,
++    "gsi": 6.9,
++    "infra": 0.75,
++    "pixelCount": 65743,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "hwacheon",
++    "name": "화천군",
++    "lat": 38.1403,
++    "lng": 127.6793,
++    "velocity": 24.9,
++    "gsi": 4.2,
++    "infra": 0.62,
++    "pixelCount": 29409,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "yanggu",
++    "name": "양구군",
++    "lat": 38.175,
++    "lng": 128.0277,
++    "velocity": -74.2,
++    "gsi": 5.3,
++    "infra": 0.57,
++    "pixelCount": 29979,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "inje",
++    "name": "인제군",
++    "lat": 38.0485,
++    "lng": 128.2133,
++    "velocity": -72.9,
++    "gsi": 5.3,
++    "infra": 0.55,
++    "pixelCount": 73380,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "goseong",
++    "name": "고성군",
++    "lat": 38.3763,
++    "lng": 128.4396,
++    "velocity": 151.2,
++    "gsi": 7.7,
++    "infra": 0.57,
++    "pixelCount": 110121,
++    "lastUpdated": "2026-06-19"
++  },
++  {
++    "id": "yangyang",
++    "name": "양양군",
++    "lat": 38.0197,
++    "lng": 128.6319,
++    "velocity": 138.8,
++    "gsi": 8.0,
++    "infra": 0.67,
++    "pixelCount": 95247,
++    "lastUpdated": "2026-06-19"
++  }
++]
+\ No newline at end of file
+diff --git a/src/realSubmunicipalityData.json b/src/realSubmunicipalityData.json
+new file mode 100644
+index 0000000..6db7e3e
+--- /dev/null
++++ b/src/realSubmunicipalityData.json
+@@ -0,0 +1,2222 @@
++{
++  "3241035": {
++    "id": "3241035",
++    "name": "강현면",
++    "parentRegion": "양양군",
++    "lat": 38.1291,
++    "lng": 128.5856,
++    "velocity": 163.3,
++    "gsi": 8.7,
++    "infra": 0.75,
++    "pixelCount": 10549,
++    "lastUpdated": "2026-06-19"
++  },
++  "3241034": {
++    "id": "3241034",
++    "name": "현남면",
++    "parentRegion": "양양군",
++    "lat": 37.9409,
++    "lng": 128.7449,
++    "velocity": 149.0,
++    "gsi": 8.2,
++    "infra": 0.67,
++    "pixelCount": 14149,
++    "lastUpdated": "2026-06-19"
++  },
++  "3241033": {
++    "id": "3241033",
++    "name": "현북면",
++    "parentRegion": "양양군",
++    "lat": 37.9687,
++    "lng": 128.6659,
++    "velocity": 121.7,
++    "gsi": 7.5,
++    "infra": 0.58,
++    "pixelCount": 25610,
++    "lastUpdated": "2026-06-19"
++  },
++  "3241032": {
++    "id": "3241032",
++    "name": "손양면",
++    "parentRegion": "양양군",
++    "lat": 38.0486,
++    "lng": 128.6543,
++    "velocity": 152.1,
++    "gsi": 9.0,
++    "infra": 0.81,
++    "pixelCount": 11988,
++    "lastUpdated": "2026-06-19"
++  },
++  "3241031": {
++    "id": "3241031",
++    "name": "서면",
++    "parentRegion": "양양군",
++    "lat": 38.0327,
++    "lng": 128.5517,
++    "velocity": 124.4,
++    "gsi": 7.4,
++    "infra": 0.62,
++    "pixelCount": 25143,
++    "lastUpdated": "2026-06-19"
++  },
++  "3241011": {
++    "id": "3241011",
++    "name": "양양읍",
++    "parentRegion": "양양군",
++    "lat": 38.0887,
++    "lng": 128.6047,
++    "velocity": 168.8,
++    "gsi": 9.2,
++    "infra": 0.83,
++    "pixelCount": 7441,
++    "lastUpdated": "2026-06-19"
++  },
++  "3240033": {
++    "id": "3240033",
++    "name": "토성면",
++    "parentRegion": "고성군",
++    "lat": 38.2478,
++    "lng": 128.5094,
++    "velocity": 169.3,
++    "gsi": 8.1,
++    "infra": 0.63,
++    "pixelCount": 29775,
++    "lastUpdated": "2026-06-19"
++  },
++  "3240032": {
++    "id": "3240032",
++    "name": "죽왕면",
++    "parentRegion": "고성군",
++    "lat": 38.3265,
++    "lng": 128.4987,
++    "velocity": 166.7,
++    "gsi": 8.0,
++    "infra": 0.61,
++    "pixelCount": 15246,
++    "lastUpdated": "2026-06-19"
++  },
++  "3240031": {
++    "id": "3240031",
++    "name": "현내면",
++    "parentRegion": "고성군",
++    "lat": 38.5293,
++    "lng": 128.3765,
++    "velocity": 137.7,
++    "gsi": 7.0,
++    "infra": 0.44,
++    "pixelCount": 23947,
++    "lastUpdated": "2026-06-19"
++  },
++  "3240012": {
++    "id": "3240012",
++    "name": "거진읍",
++    "parentRegion": "고성군",
++    "lat": 38.429,
++    "lng": 128.4125,
++    "velocity": 153.9,
++    "gsi": 8.0,
++    "infra": 0.62,
++    "pixelCount": 20658,
++    "lastUpdated": "2026-06-19"
++  },
++  "3240011": {
++    "id": "3240011",
++    "name": "간성읍",
++    "parentRegion": "고성군",
++    "lat": 38.352,
++    "lng": 128.4122,
++    "velocity": 132.9,
++    "gsi": 7.2,
++    "infra": 0.56,
++    "pixelCount": 22057,
++    "lastUpdated": "2026-06-19"
++  },
++  "3239035": {
++    "id": "3239035",
++    "name": "상남면",
++    "parentRegion": "인제군",
++    "lat": 37.8802,
++    "lng": 128.2731,
++    "velocity": -37.3,
++    "gsi": 2.5,
++    "infra": 0.41,
++    "pixelCount": 3041,
++    "lastUpdated": "2026-06-19"
++  },
++  "3239034": {
++    "id": "3239034",
++    "name": "서화면",
++    "parentRegion": "인제군",
++    "lat": 38.2549,
++    "lng": 128.2192,
++    "velocity": -62.7,
++    "gsi": 4.1,
++    "infra": 0.41,
++    "pixelCount": 6966,
++    "lastUpdated": "2026-06-19"
++  },
++  "3239033": {
++    "id": "3239033",
++    "name": "기린면",
++    "parentRegion": "인제군",
++    "lat": 37.9733,
++    "lng": 128.3985,
++    "velocity": -6.1,
++    "gsi": 3.8,
++    "infra": 0.53,
++    "pixelCount": 6515,
++    "lastUpdated": "2026-06-19"
++  },
++  "3239032": {
++    "id": "3239032",
++    "name": "북면",
++    "parentRegion": "인제군",
++    "lat": 38.1492,
++    "lng": 128.3033,
++    "velocity": -58.0,
++    "gsi": 4.5,
++    "infra": 0.43,
++    "pixelCount": 11215,
++    "lastUpdated": "2026-06-19"
++  },
++  "3239031": {
++    "id": "3239031",
++    "name": "남면",
++    "parentRegion": "인제군",
++    "lat": 37.9814,
++    "lng": 128.1047,
++    "velocity": -95.6,
++    "gsi": 6.5,
++    "infra": 0.62,
++    "pixelCount": 26218,
++    "lastUpdated": "2026-06-19"
++  },
++  "3239011": {
++    "id": "3239011",
++    "name": "인제읍",
++    "parentRegion": "인제군",
++    "lat": 38.0558,
++    "lng": 128.2478,
++    "velocity": -77.7,
++    "gsi": 5.4,
++    "infra": 0.61,
++    "pixelCount": 18791,
++    "lastUpdated": "2026-06-19"
++  },
++  "3238034": {
++    "id": "3238034",
++    "name": "해안면",
++    "parentRegion": "양구군",
++    "lat": 38.2844,
++    "lng": 128.1277,
++    "velocity": -79.5,
++    "gsi": 6.2,
++    "infra": 0.75,
++    "pixelCount": 6436,
++    "lastUpdated": "2026-06-19"
++  },
++  "3238033": {
++    "id": "3238033",
++    "name": "방산면",
++    "parentRegion": "양구군",
++    "lat": 38.2463,
++    "lng": 127.9261,
++    "velocity": -69.5,
++    "gsi": 4.1,
++    "infra": 0.37,
++    "pixelCount": 5974,
++    "lastUpdated": "2026-06-19"
++  },
++  "3238032": {
++    "id": "3238032",
++    "name": "동면",
++    "parentRegion": "양구군",
++    "lat": 38.2381,
++    "lng": 128.0525,
++    "velocity": -54.3,
++    "gsi": 4.3,
++    "infra": 0.57,
++    "pixelCount": 3611,
++    "lastUpdated": "2026-06-19"
++  },
++  "3238031": {
++    "id": "3238031",
++    "name": "남면",
++    "parentRegion": "양구군",
++    "lat": 38.0577,
++    "lng": 128.0637,
++    "velocity": -98.7,
++    "gsi": 6.3,
++    "infra": 0.52,
++    "pixelCount": 9711,
++    "lastUpdated": "2026-06-19"
++  },
++  "3238011": {
++    "id": "3238011",
++    "name": "양구읍",
++    "parentRegion": "양구군",
++    "lat": 38.0974,
++    "lng": 127.9531,
++    "velocity": -51.2,
++    "gsi": 4.5,
++    "infra": 0.63,
++    "pixelCount": 5145,
++    "lastUpdated": "2026-06-19"
++  },
++  "3237034": {
++    "id": "3237034",
++    "name": "사내면",
++    "parentRegion": "화천군",
++    "lat": 38.081,
++    "lng": 127.5023,
++    "velocity": 52.3,
++    "gsi": 4.4,
++    "infra": 0.69,
++    "pixelCount": 4598,
++    "lastUpdated": "2026-06-19"
++  },
++  "3237033": {
++    "id": "3237033",
++    "name": "상서면",
++    "parentRegion": "화천군",
++    "lat": 38.186,
++    "lng": 127.6391,
++    "velocity": 46.3,
++    "gsi": 4.0,
++    "infra": 0.62,
++    "pixelCount": 7666,
++    "lastUpdated": "2026-06-19"
++  },
++  "3237032": {
++    "id": "3237032",
++    "name": "하남면",
++    "parentRegion": "화천군",
++    "lat": 38.0773,
++    "lng": 127.6664,
++    "velocity": 57.9,
++    "gsi": 5.0,
++    "infra": 0.77,
++    "pixelCount": 5514,
++    "lastUpdated": "2026-06-19"
++  },
++  "3237031": {
++    "id": "3237031",
++    "name": "간동면",
++    "parentRegion": "화천군",
++    "lat": 38.0552,
++    "lng": 127.821,
++    "velocity": 3.8,
++    "gsi": 3.7,
++    "infra": 0.52,
++    "pixelCount": 2963,
++    "lastUpdated": "2026-06-19"
++  },
++  "3237011": {
++    "id": "3237011",
++    "name": "화천읍",
++    "parentRegion": "화천군",
++    "lat": 38.1912,
++    "lng": 127.7685,
++    "velocity": -21.0,
++    "gsi": 3.9,
++    "infra": 0.53,
++    "pixelCount": 9085,
++    "lastUpdated": "2026-06-19"
++  },
++  "3236032": {
++    "id": "3236032",
++    "name": "근남면",
++    "parentRegion": "철원군",
++    "lat": 38.2475,
++    "lng": 127.5005,
++    "velocity": 67.4,
++    "gsi": 5.2,
++    "infra": 0.67,
++    "pixelCount": 6066,
++    "lastUpdated": "2026-06-19"
++  },
++  "3236031": {
++    "id": "3236031",
++    "name": "서면",
++    "parentRegion": "철원군",
++    "lat": 38.192,
++    "lng": 127.4217,
++    "velocity": 81.6,
++    "gsi": 6.3,
++    "infra": 0.75,
++    "pixelCount": 6025,
++    "lastUpdated": "2026-06-19"
++  },
++  "3236021": {
++    "id": "3236021",
++    "name": "근북면",
++    "parentRegion": "철원군",
++    "lat": 38.2632,
++    "lng": 127.3935,
++    "velocity": 79.0,
++    "gsi": 4.1,
++    "infra": 0.16,
++    "pixelCount": 50,
++    "lastUpdated": "2026-06-19"
++  },
++  "3236014": {
++    "id": "3236014",
++    "name": "동송읍",
++    "parentRegion": "철원군",
++    "lat": 38.221,
++    "lng": 127.2481,
++    "velocity": 95.9,
++    "gsi": 7.7,
++    "infra": 0.82,
++    "pixelCount": 16454,
++    "lastUpdated": "2026-06-19"
++  },
++  "3236013": {
++    "id": "3236013",
++    "name": "갈말읍",
++    "parentRegion": "철원군",
++    "lat": 38.2034,
++    "lng": 127.3239,
++    "velocity": 90.8,
++    "gsi": 7.0,
++    "infra": 0.75,
++    "pixelCount": 19453,
++    "lastUpdated": "2026-06-19"
++  },
++  "3236012": {
++    "id": "3236012",
++    "name": "김화읍",
++    "parentRegion": "철원군",
++    "lat": 38.2639,
++    "lng": 127.4123,
++    "velocity": 92.2,
++    "gsi": 7.1,
++    "infra": 0.73,
++    "pixelCount": 9246,
++    "lastUpdated": "2026-06-19"
++  },
++  "3236011": {
++    "id": "3236011",
++    "name": "철원읍",
++    "parentRegion": "철원군",
++    "lat": 38.2573,
++    "lng": 127.1871,
++    "velocity": 87.7,
++    "gsi": 6.6,
++    "infra": 0.7,
++    "pixelCount": 8688,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235037": {
++    "id": "3235037",
++    "name": "여량면",
++    "parentRegion": "정선군",
++    "lat": 37.503,
++    "lng": 128.7214,
++    "velocity": -39.1,
++    "gsi": 3.8,
++    "infra": 0.57,
++    "pixelCount": 3394,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235036": {
++    "id": "3235036",
++    "name": "화암면",
++    "parentRegion": "정선군",
++    "lat": 37.3145,
++    "lng": 128.8133,
++    "velocity": 56.0,
++    "gsi": 4.6,
++    "infra": 0.68,
++    "pixelCount": 5052,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235035": {
++    "id": "3235035",
++    "name": "임계면",
++    "parentRegion": "정선군",
++    "lat": 37.4657,
++    "lng": 128.876,
++    "velocity": -12.8,
++    "gsi": 2.2,
++    "infra": 0.4,
++    "pixelCount": 3932,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235034": {
++    "id": "3235034",
++    "name": "북평면",
++    "parentRegion": "정선군",
++    "lat": 37.4855,
++    "lng": 128.6156,
++    "velocity": -86.9,
++    "gsi": 5.5,
++    "infra": 0.5,
++    "pixelCount": 6550,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235032": {
++    "id": "3235032",
++    "name": "남면",
++    "parentRegion": "정선군",
++    "lat": 37.2755,
++    "lng": 128.7356,
++    "velocity": 42.3,
++    "gsi": 3.5,
++    "infra": 0.65,
++    "pixelCount": 3282,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235014": {
++    "id": "3235014",
++    "name": "신동읍",
++    "parentRegion": "정선군",
++    "lat": 37.2275,
++    "lng": 128.6646,
++    "velocity": 47.4,
++    "gsi": 3.7,
++    "infra": 0.57,
++    "pixelCount": 2798,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235013": {
++    "id": "3235013",
++    "name": "사북읍",
++    "parentRegion": "정선군",
++    "lat": 37.2346,
++    "lng": 128.8249,
++    "velocity": 71.9,
++    "gsi": 5.3,
++    "infra": 0.7,
++    "pixelCount": 2546,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235012": {
++    "id": "3235012",
++    "name": "고한읍",
++    "parentRegion": "정선군",
++    "lat": 37.1843,
++    "lng": 128.8819,
++    "velocity": 86.2,
++    "gsi": 6.1,
++    "infra": 0.65,
++    "pixelCount": 5837,
++    "lastUpdated": "2026-06-19"
++  },
++  "3235011": {
++    "id": "3235011",
++    "name": "정선읍",
++    "parentRegion": "정선군",
++    "lat": 37.3913,
++    "lng": 128.6121,
++    "velocity": -44.3,
++    "gsi": 3.2,
++    "infra": 0.44,
++    "pixelCount": 4533,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234037": {
++    "id": "3234037",
++    "name": "대관령면",
++    "parentRegion": "평창군",
++    "lat": 37.6773,
++    "lng": 128.6842,
++    "velocity": 20.6,
++    "gsi": 2.4,
++    "infra": 0.57,
++    "pixelCount": 3798,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234036": {
++    "id": "3234036",
++    "name": "진부면",
++    "parentRegion": "평창군",
++    "lat": 37.5772,
++    "lng": 128.5766,
++    "velocity": -73.1,
++    "gsi": 4.5,
++    "infra": 0.46,
++    "pixelCount": 10569,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234035": {
++    "id": "3234035",
++    "name": "용평면",
++    "parentRegion": "평창군",
++    "lat": 37.6222,
++    "lng": 128.4505,
++    "velocity": -2.2,
++    "gsi": 2.8,
++    "infra": 0.54,
++    "pixelCount": 2358,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234034": {
++    "id": "3234034",
++    "name": "봉평면",
++    "parentRegion": "평창군",
++    "lat": 37.6113,
++    "lng": 128.354,
++    "velocity": -6.7,
++    "gsi": 2.2,
++    "infra": 0.44,
++    "pixelCount": 3391,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234033": {
++    "id": "3234033",
++    "name": "대화면",
++    "parentRegion": "평창군",
++    "lat": 37.4901,
++    "lng": 128.4473,
++    "velocity": 9.0,
++    "gsi": 3.7,
++    "infra": 0.6,
++    "pixelCount": 4202,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234032": {
++    "id": "3234032",
++    "name": "방림면",
++    "parentRegion": "평창군",
++    "lat": 37.4468,
++    "lng": 128.3403,
++    "velocity": 15.2,
++    "gsi": 3.2,
++    "infra": 0.6,
++    "pixelCount": 2518,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234031": {
++    "id": "3234031",
++    "name": "미탄면",
++    "parentRegion": "평창군",
++    "lat": 37.3315,
++    "lng": 128.5154,
++    "velocity": -34.0,
++    "gsi": 2.6,
++    "infra": 0.49,
++    "pixelCount": 1966,
++    "lastUpdated": "2026-06-19"
++  },
++  "3234011": {
++    "id": "3234011",
++    "name": "평창읍",
++    "parentRegion": "평창군",
++    "lat": 37.3673,
++    "lng": 128.4018,
++    "velocity": -41.5,
++    "gsi": 3.6,
++    "infra": 0.65,
++    "pixelCount": 3602,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233039": {
++    "id": "3233039",
++    "name": "한반도면",
++    "parentRegion": "영월군",
++    "lat": 37.2198,
++    "lng": 128.3417,
++    "velocity": 18.7,
++    "gsi": 3.2,
++    "infra": 0.77,
++    "pixelCount": 1364,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233038": {
++    "id": "3233038",
++    "name": "김삿갓면",
++    "parentRegion": "영월군",
++    "lat": 37.1196,
++    "lng": 128.5922,
++    "velocity": 0.5,
++    "gsi": 2.1,
++    "infra": 0.43,
++    "pixelCount": 1640,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233037": {
++    "id": "3233037",
++    "name": "수주면",
++    "parentRegion": "영월군",
++    "lat": 37.3284,
++    "lng": 128.2311,
++    "velocity": 4.5,
++    "gsi": 2.0,
++    "infra": 0.43,
++    "pixelCount": 2216,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233036": {
++    "id": "3233036",
++    "name": "주천면",
++    "parentRegion": "영월군",
++    "lat": 37.2687,
++    "lng": 128.2852,
++    "velocity": 17.1,
++    "gsi": 4.0,
++    "infra": 0.75,
++    "pixelCount": 2817,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233034": {
++    "id": "3233034",
++    "name": "남면",
++    "parentRegion": "영월군",
++    "lat": 37.1547,
++    "lng": 128.4012,
++    "velocity": -23.5,
++    "gsi": 3.1,
++    "infra": 0.61,
++    "pixelCount": 1579,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233033": {
++    "id": "3233033",
++    "name": "북면",
++    "parentRegion": "영월군",
++    "lat": 37.2792,
++    "lng": 128.4307,
++    "velocity": -41.8,
++    "gsi": 3.3,
++    "infra": 0.61,
++    "pixelCount": 2308,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233031": {
++    "id": "3233031",
++    "name": "중동면",
++    "parentRegion": "영월군",
++    "lat": 37.1697,
++    "lng": 128.7175,
++    "velocity": 73.8,
++    "gsi": 4.5,
++    "infra": 0.44,
++    "pixelCount": 4046,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233012": {
++    "id": "3233012",
++    "name": "상동읍",
++    "parentRegion": "영월군",
++    "lat": 37.1398,
++    "lng": 128.8295,
++    "velocity": 86.9,
++    "gsi": 6.3,
++    "infra": 0.67,
++    "pixelCount": 8130,
++    "lastUpdated": "2026-06-19"
++  },
++  "3233011": {
++    "id": "3233011",
++    "name": "영월읍",
++    "parentRegion": "영월군",
++    "lat": 37.1951,
++    "lng": 128.5103,
++    "velocity": -34.1,
++    "gsi": 2.9,
++    "infra": 0.55,
++    "pixelCount": 3189,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232038": {
++    "id": "3232038",
++    "name": "강림면",
++    "parentRegion": "횡성군",
++    "lat": 37.3492,
++    "lng": 128.1128,
++    "velocity": 13.8,
++    "gsi": 1.5,
++    "infra": 0.37,
++    "pixelCount": 1239,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232037": {
++    "id": "3232037",
++    "name": "서원면",
++    "parentRegion": "횡성군",
++    "lat": 37.4809,
++    "lng": 127.8515,
++    "velocity": -10.2,
++    "gsi": 2.2,
++    "infra": 0.52,
++    "pixelCount": 1907,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232036": {
++    "id": "3232036",
++    "name": "공근면",
++    "parentRegion": "횡성군",
++    "lat": 37.5522,
++    "lng": 127.9699,
++    "velocity": 65.0,
++    "gsi": 5.6,
++    "infra": 0.8,
++    "pixelCount": 8346,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232035": {
++    "id": "3232035",
++    "name": "청일면",
++    "parentRegion": "횡성군",
++    "lat": 37.5811,
++    "lng": 128.1913,
++    "velocity": 38.1,
++    "gsi": 4.2,
++    "infra": 0.62,
++    "pixelCount": 3395,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232034": {
++    "id": "3232034",
++    "name": "갑천면",
++    "parentRegion": "횡성군",
++    "lat": 37.5591,
++    "lng": 128.0901,
++    "velocity": 12.8,
++    "gsi": 3.7,
++    "infra": 0.67,
++    "pixelCount": 2891,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232033": {
++    "id": "3232033",
++    "name": "둔내면",
++    "parentRegion": "횡성군",
++    "lat": 37.513,
++    "lng": 128.2223,
++    "velocity": 74.9,
++    "gsi": 6.1,
++    "infra": 0.82,
++    "pixelCount": 11722,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232032": {
++    "id": "3232032",
++    "name": "안흥면",
++    "parentRegion": "횡성군",
++    "lat": 37.428,
++    "lng": 128.1823,
++    "velocity": 48.5,
++    "gsi": 3.8,
++    "infra": 0.64,
++    "pixelCount": 2276,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232031": {
++    "id": "3232031",
++    "name": "우천면",
++    "parentRegion": "횡성군",
++    "lat": 37.4668,
++    "lng": 128.0795,
++    "velocity": 66.1,
++    "gsi": 5.6,
++    "infra": 0.87,
++    "pixelCount": 7150,
++    "lastUpdated": "2026-06-19"
++  },
++  "3232011": {
++    "id": "3232011",
++    "name": "횡성읍",
++    "parentRegion": "횡성군",
++    "lat": 37.4881,
++    "lng": 127.9991,
++    "velocity": 73.4,
++    "gsi": 6.1,
++    "infra": 0.88,
++    "pixelCount": 11066,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231039": {
++    "id": "3231039",
++    "name": "내면",
++    "parentRegion": "홍천군",
++    "lat": 37.8034,
++    "lng": 128.4145,
++    "velocity": -32.7,
++    "gsi": 3.1,
++    "infra": 0.46,
++    "pixelCount": 8955,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231038": {
++    "id": "3231038",
++    "name": "북방면",
++    "parentRegion": "홍천군",
++    "lat": 37.7123,
++    "lng": 127.8343,
++    "velocity": 40.5,
++    "gsi": 4.3,
++    "infra": 0.75,
++    "pixelCount": 4788,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231037": {
++    "id": "3231037",
++    "name": "서면",
++    "parentRegion": "홍천군",
++    "lat": 37.6613,
++    "lng": 127.6442,
++    "velocity": 39.3,
++    "gsi": 3.6,
++    "infra": 0.73,
++    "pixelCount": 2776,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231036": {
++    "id": "3231036",
++    "name": "남면",
++    "parentRegion": "홍천군",
++    "lat": 37.6085,
++    "lng": 127.7809,
++    "velocity": 28.6,
++    "gsi": 2.8,
++    "infra": 0.57,
++    "pixelCount": 1816,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231035": {
++    "id": "3231035",
++    "name": "동면",
++    "parentRegion": "홍천군",
++    "lat": 37.6637,
++    "lng": 127.9726,
++    "velocity": 12.4,
++    "gsi": 4.0,
++    "infra": 0.7,
++    "pixelCount": 4497,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231034": {
++    "id": "3231034",
++    "name": "서석면",
++    "parentRegion": "홍천군",
++    "lat": 37.7133,
++    "lng": 128.2043,
++    "velocity": -49.2,
++    "gsi": 3.6,
++    "infra": 0.54,
++    "pixelCount": 5105,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231033": {
++    "id": "3231033",
++    "name": "내촌면",
++    "parentRegion": "홍천군",
++    "lat": 37.8136,
++    "lng": 128.1126,
++    "velocity": -32.7,
++    "gsi": 2.5,
++    "infra": 0.56,
++    "pixelCount": 2408,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231032": {
++    "id": "3231032",
++    "name": "두촌면",
++    "parentRegion": "홍천군",
++    "lat": 37.874,
++    "lng": 128.0513,
++    "velocity": -48.4,
++    "gsi": 4.4,
++    "infra": 0.6,
++    "pixelCount": 4316,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231031": {
++    "id": "3231031",
++    "name": "화촌면",
++    "parentRegion": "홍천군",
++    "lat": 37.7633,
++    "lng": 127.9754,
++    "velocity": 10.6,
++    "gsi": 3.3,
++    "infra": 0.65,
++    "pixelCount": 4422,
++    "lastUpdated": "2026-06-19"
++  },
++  "3231011": {
++    "id": "3231011",
++    "name": "홍천읍",
++    "parentRegion": "홍천군",
++    "lat": 37.6839,
++    "lng": 127.8817,
++    "velocity": 54.6,
++    "gsi": 4.9,
++    "infra": 0.86,
++    "pixelCount": 6274,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207054": {
++    "id": "3207054",
++    "name": "정라동",
++    "parentRegion": "삼척시",
++    "lat": 37.4382,
++    "lng": 129.1867,
++    "velocity": 132.9,
++    "gsi": 9.8,
++    "infra": 0.97,
++    "pixelCount": 464,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207053": {
++    "id": "3207053",
++    "name": "교동",
++    "parentRegion": "삼척시",
++    "lat": 37.455,
++    "lng": 129.1655,
++    "velocity": 131.2,
++    "gsi": 9.7,
++    "infra": 0.97,
++    "pixelCount": 2229,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207052": {
++    "id": "3207052",
++    "name": "성내동",
++    "parentRegion": "삼척시",
++    "lat": 37.4388,
++    "lng": 129.1322,
++    "velocity": 123.8,
++    "gsi": 8.6,
++    "infra": 0.79,
++    "pixelCount": 4817,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207051": {
++    "id": "3207051",
++    "name": "남양동",
++    "parentRegion": "삼척시",
++    "lat": 37.4148,
++    "lng": 129.1705,
++    "velocity": 122.6,
++    "gsi": 8.5,
++    "infra": 0.8,
++    "pixelCount": 4314,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207036": {
++    "id": "3207036",
++    "name": "신기면",
++    "parentRegion": "삼척시",
++    "lat": 37.3333,
++    "lng": 129.0739,
++    "velocity": 92.5,
++    "gsi": 7.0,
++    "infra": 0.73,
++    "pixelCount": 5481,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207035": {
++    "id": "3207035",
++    "name": "가곡면",
++    "parentRegion": "삼척시",
++    "lat": 37.1712,
++    "lng": 129.1713,
++    "velocity": 53.7,
++    "gsi": 4.0,
++    "infra": 0.57,
++    "pixelCount": 537,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207034": {
++    "id": "3207034",
++    "name": "미로면",
++    "parentRegion": "삼척시",
++    "lat": 37.4035,
++    "lng": 129.0809,
++    "velocity": 103.5,
++    "gsi": 7.5,
++    "infra": 0.72,
++    "pixelCount": 15178,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207033": {
++    "id": "3207033",
++    "name": "노곡면",
++    "parentRegion": "삼척시",
++    "lat": 37.2889,
++    "lng": 129.1691,
++    "velocity": 69.4,
++    "gsi": 5.3,
++    "infra": 0.64,
++    "pixelCount": 6295,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207032": {
++    "id": "3207032",
++    "name": "하장면",
++    "parentRegion": "삼척시",
++    "lat": 37.3372,
++    "lng": 128.9222,
++    "velocity": 19.4,
++    "gsi": 3.0,
++    "infra": 0.46,
++    "pixelCount": 4055,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207031": {
++    "id": "3207031",
++    "name": "근덕면",
++    "parentRegion": "삼척시",
++    "lat": 37.3337,
++    "lng": 129.2384,
++    "velocity": 108.5,
++    "gsi": 8.0,
++    "infra": 0.75,
++    "pixelCount": 24380,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207012": {
++    "id": "3207012",
++    "name": "원덕읍",
++    "parentRegion": "삼척시",
++    "lat": 37.2203,
++    "lng": 129.3106,
++    "velocity": 98.8,
++    "gsi": 7.1,
++    "infra": 0.68,
++    "pixelCount": 12818,
++    "lastUpdated": "2026-06-19"
++  },
++  "3207011": {
++    "id": "3207011",
++    "name": "도계읍",
++    "parentRegion": "삼척시",
++    "lat": 37.2304,
++    "lng": 129.0497,
++    "velocity": 106.8,
++    "gsi": 7.0,
++    "infra": 0.64,
++    "pixelCount": 15844,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206060": {
++    "id": "3206060",
++    "name": "대포동",
++    "parentRegion": "속초시",
++    "lat": 38.166,
++    "lng": 128.518,
++    "velocity": 156.2,
++    "gsi": 7.5,
++    "infra": 0.52,
++    "pixelCount": 11421,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206059": {
++    "id": "3206059",
++    "name": "청호동",
++    "parentRegion": "속초시",
++    "lat": 38.1908,
++    "lng": 128.598,
++    "velocity": 180.2,
++    "gsi": 9.9,
++    "infra": 0.98,
++    "pixelCount": 662,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206058": {
++    "id": "3206058",
++    "name": "조양동",
++    "parentRegion": "속초시",
++    "lat": 38.1811,
++    "lng": 128.5855,
++    "velocity": 179.3,
++    "gsi": 9.6,
++    "infra": 0.93,
++    "pixelCount": 758,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206057": {
++    "id": "3206057",
++    "name": "노학동",
++    "parentRegion": "속초시",
++    "lat": 38.1904,
++    "lng": 128.5443,
++    "velocity": 175.7,
++    "gsi": 8.8,
++    "infra": 0.77,
++    "pixelCount": 5762,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206056": {
++    "id": "3206056",
++    "name": "교동",
++    "parentRegion": "속초시",
++    "lat": 38.1992,
++    "lng": 128.584,
++    "velocity": 179.6,
++    "gsi": 9.5,
++    "infra": 0.9,
++    "pixelCount": 130,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206054": {
++    "id": "3206054",
++    "name": "금호동",
++    "parentRegion": "속초시",
++    "lat": 38.2044,
++    "lng": 128.586,
++    "velocity": 181.2,
++    "gsi": 10.0,
++    "infra": 0.99,
++    "pixelCount": 350,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206052": {
++    "id": "3206052",
++    "name": "동명동",
++    "parentRegion": "속초시",
++    "lat": 38.2082,
++    "lng": 128.5951,
++    "velocity": 181.1,
++    "gsi": 9.9,
++    "infra": 0.98,
++    "pixelCount": 144,
++    "lastUpdated": "2026-06-19"
++  },
++  "3206051": {
++    "id": "3206051",
++    "name": "영랑동",
++    "parentRegion": "속초시",
++    "lat": 38.2147,
++    "lng": 128.5721,
++    "velocity": 180.8,
++    "gsi": 9.6,
++    "infra": 0.92,
++    "pixelCount": 1946,
++    "lastUpdated": "2026-06-19"
++  },
++  "3205062": {
++    "id": "3205062",
++    "name": "문곡소도동",
++    "parentRegion": "태백시",
++    "lat": 37.141,
++    "lng": 128.9317,
++    "velocity": 89.6,
++    "gsi": 6.4,
++    "infra": 0.69,
++    "pixelCount": 1881,
++    "lastUpdated": "2026-06-19"
++  },
++  "3205054": {
++    "id": "3205054",
++    "name": "상장동",
++    "parentRegion": "태백시",
++    "lat": 37.154,
++    "lng": 128.9672,
++    "velocity": 129.5,
++    "gsi": 8.3,
++    "infra": 0.72,
++    "pixelCount": 4708,
++    "lastUpdated": "2026-06-19"
++  },
++  "3205053": {
++    "id": "3205053",
++    "name": "삼수동",
++    "parentRegion": "태백시",
++    "lat": 37.2099,
++    "lng": 128.9594,
++    "velocity": 105.1,
++    "gsi": 7.0,
++    "infra": 0.69,
++    "pixelCount": 11363,
++    "lastUpdated": "2026-06-19"
++  },
++  "3205052": {
++    "id": "3205052",
++    "name": "황연동",
++    "parentRegion": "태백시",
++    "lat": 37.1682,
++    "lng": 129.0156,
++    "velocity": 106.4,
++    "gsi": 7.2,
++    "infra": 0.68,
++    "pixelCount": 4585,
++    "lastUpdated": "2026-06-19"
++  },
++  "3205051": {
++    "id": "3205051",
++    "name": "황지동",
++    "parentRegion": "태백시",
++    "lat": 37.1656,
++    "lng": 128.9937,
++    "velocity": 128.5,
++    "gsi": 8.8,
++    "infra": 0.81,
++    "pixelCount": 280,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204065": {
++    "id": "3204065",
++    "name": "삼화동",
++    "parentRegion": "동해시",
++    "lat": 37.4843,
++    "lng": 129.0353,
++    "velocity": 114.2,
++    "gsi": 6.7,
++    "infra": 0.49,
++    "pixelCount": 9748,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204063": {
++    "id": "3204063",
++    "name": "망상동",
++    "parentRegion": "동해시",
++    "lat": 37.5689,
++    "lng": 129.0829,
++    "velocity": 132.3,
++    "gsi": 8.7,
++    "infra": 0.78,
++    "pixelCount": 6714,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204060": {
++    "id": "3204060",
++    "name": "북평동",
++    "parentRegion": "동해시",
++    "lat": 37.4696,
++    "lng": 129.1248,
++    "velocity": 126.2,
++    "gsi": 9.2,
++    "infra": 0.91,
++    "pixelCount": 4585,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204059": {
++    "id": "3204059",
++    "name": "묵호동",
++    "parentRegion": "동해시",
++    "lat": 37.5595,
++    "lng": 129.1131,
++    "velocity": 141.5,
++    "gsi": 9.6,
++    "infra": 0.92,
++    "pixelCount": 147,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204057": {
++    "id": "3204057",
++    "name": "발한동",
++    "parentRegion": "동해시",
++    "lat": 37.544,
++    "lng": 129.1097,
++    "velocity": 142.3,
++    "gsi": 9.8,
++    "infra": 0.97,
++    "pixelCount": 346,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204055": {
++    "id": "3204055",
++    "name": "동호동",
++    "parentRegion": "동해시",
++    "lat": 37.5422,
++    "lng": 129.095,
++    "velocity": 137.6,
++    "gsi": 9.7,
++    "infra": 0.95,
++    "pixelCount": 404,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204054": {
++    "id": "3204054",
++    "name": "부곡동",
++    "parentRegion": "동해시",
++    "lat": 37.5358,
++    "lng": 129.0874,
++    "velocity": 121.1,
++    "gsi": 8.5,
++    "infra": 0.82,
++    "pixelCount": 844,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204053": {
++    "id": "3204053",
++    "name": "북삼동",
++    "parentRegion": "동해시",
++    "lat": 37.4916,
++    "lng": 129.0963,
++    "velocity": 131.4,
++    "gsi": 9.0,
++    "infra": 0.83,
++    "pixelCount": 3865,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204052": {
++    "id": "3204052",
++    "name": "송정동",
++    "parentRegion": "동해시",
++    "lat": 37.4968,
++    "lng": 129.1287,
++    "velocity": 135.1,
++    "gsi": 9.5,
++    "infra": 0.91,
++    "pixelCount": 1326,
++    "lastUpdated": "2026-06-19"
++  },
++  "3204051": {
++    "id": "3204051",
++    "name": "천곡동",
++    "parentRegion": "동해시",
++    "lat": 37.5213,
++    "lng": 129.1025,
++    "velocity": 135.8,
++    "gsi": 9.2,
++    "infra": 0.85,
++    "pixelCount": 2506,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203067": {
++    "id": "3203067",
++    "name": "경포동",
++    "parentRegion": "강릉시",
++    "lat": 37.7862,
++    "lng": 128.879,
++    "velocity": 178.5,
++    "gsi": 9.6,
++    "infra": 0.93,
++    "pixelCount": 6150,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203065": {
++    "id": "3203065",
++    "name": "성덕동",
++    "parentRegion": "강릉시",
++    "lat": 37.7535,
++    "lng": 128.9344,
++    "velocity": 180.0,
++    "gsi": 9.8,
++    "infra": 0.95,
++    "pixelCount": 2670,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203062": {
++    "id": "3203062",
++    "name": "강남동",
++    "parentRegion": "강릉시",
++    "lat": 37.7296,
++    "lng": 128.9174,
++    "velocity": 177.7,
++    "gsi": 9.7,
++    "infra": 0.95,
++    "pixelCount": 4467,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203061": {
++    "id": "3203061",
++    "name": "내곡동",
++    "parentRegion": "강릉시",
++    "lat": 37.7357,
++    "lng": 128.8772,
++    "velocity": 181.8,
++    "gsi": 9.9,
++    "infra": 0.98,
++    "pixelCount": 1258,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203060": {
++    "id": "3203060",
++    "name": "송정동",
++    "parentRegion": "강릉시",
++    "lat": 37.7733,
++    "lng": 128.9335,
++    "velocity": 179.8,
++    "gsi": 9.8,
++    "infra": 0.97,
++    "pixelCount": 983,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203059": {
++    "id": "3203059",
++    "name": "초당동",
++    "parentRegion": "강릉시",
++    "lat": 37.7874,
++    "lng": 128.9197,
++    "velocity": 173.7,
++    "gsi": 9.9,
++    "infra": 0.98,
++    "pixelCount": 418,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203058": {
++    "id": "3203058",
++    "name": "포남2동",
++    "parentRegion": "강릉시",
++    "lat": 37.7755,
++    "lng": 128.9113,
++    "velocity": 181.8,
++    "gsi": 9.9,
++    "infra": 0.98,
++    "pixelCount": 834,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203057": {
++    "id": "3203057",
++    "name": "포남1동",
++    "parentRegion": "강릉시",
++    "lat": 37.763,
++    "lng": 128.9115,
++    "velocity": 182.2,
++    "gsi": 10.0,
++    "infra": 1.0,
++    "pixelCount": 392,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203056": {
++    "id": "3203056",
++    "name": "교2동",
++    "parentRegion": "강릉시",
++    "lat": 37.7668,
++    "lng": 128.8963,
++    "velocity": 183.2,
++    "gsi": 10.0,
++    "infra": 1.0,
++    "pixelCount": 649,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203055": {
++    "id": "3203055",
++    "name": "교1동",
++    "parentRegion": "강릉시",
++    "lat": 37.7614,
++    "lng": 128.8851,
++    "velocity": 182.3,
++    "gsi": 10.0,
++    "infra": 1.0,
++    "pixelCount": 568,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203054": {
++    "id": "3203054",
++    "name": "옥천동",
++    "parentRegion": "강릉시",
++    "lat": 37.7558,
++    "lng": 128.9041,
++    "velocity": 183.5,
++    "gsi": 10.0,
++    "infra": 1.0,
++    "pixelCount": 144,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203052": {
++    "id": "3203052",
++    "name": "중앙동",
++    "parentRegion": "강릉시",
++    "lat": 37.7502,
++    "lng": 128.8964,
++    "velocity": 182.9,
++    "gsi": 10.0,
++    "infra": 1.0,
++    "pixelCount": 267,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203051": {
++    "id": "3203051",
++    "name": "홍제동",
++    "parentRegion": "강릉시",
++    "lat": 37.7491,
++    "lng": 128.875,
++    "velocity": 182.4,
++    "gsi": 10.0,
++    "infra": 0.99,
++    "pixelCount": 897,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203037": {
++    "id": "3203037",
++    "name": "연곡면",
++    "parentRegion": "강릉시",
++    "lat": 37.8387,
++    "lng": 128.7367,
++    "velocity": 126.0,
++    "gsi": 7.1,
++    "infra": 0.55,
++    "pixelCount": 25549,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203036": {
++    "id": "3203036",
++    "name": "사천면",
++    "parentRegion": "강릉시",
++    "lat": 37.8045,
++    "lng": 128.8244,
++    "velocity": 161.3,
++    "gsi": 8.6,
++    "infra": 0.75,
++    "pixelCount": 15907,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203035": {
++    "id": "3203035",
++    "name": "옥계면",
++    "parentRegion": "강릉시",
++    "lat": 37.5973,
++    "lng": 129.0164,
++    "velocity": 122.2,
++    "gsi": 7.5,
++    "infra": 0.64,
++    "pixelCount": 19108,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203034": {
++    "id": "3203034",
++    "name": "강동면",
++    "parentRegion": "강릉시",
++    "lat": 37.6885,
++    "lng": 128.9824,
++    "velocity": 140.4,
++    "gsi": 8.4,
++    "infra": 0.76,
++    "pixelCount": 21354,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203033": {
++    "id": "3203033",
++    "name": "구정면",
++    "parentRegion": "강릉시",
++    "lat": 37.7005,
++    "lng": 128.8901,
++    "velocity": 159.0,
++    "gsi": 9.0,
++    "infra": 0.85,
++    "pixelCount": 7440,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203032": {
++    "id": "3203032",
++    "name": "왕산면",
++    "parentRegion": "강릉시",
++    "lat": 37.6345,
++    "lng": 128.8,
++    "velocity": 59.0,
++    "gsi": 5.4,
++    "infra": 0.67,
++    "pixelCount": 9460,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203031": {
++    "id": "3203031",
++    "name": "성산면",
++    "parentRegion": "강릉시",
++    "lat": 37.7314,
++    "lng": 128.8144,
++    "velocity": 140.9,
++    "gsi": 8.6,
++    "infra": 0.8,
++    "pixelCount": 17434,
++    "lastUpdated": "2026-06-19"
++  },
++  "3203011": {
++    "id": "3203011",
++    "name": "주문진읍",
++    "parentRegion": "강릉시",
++    "lat": 37.8858,
++    "lng": 128.7798,
++    "velocity": 150.1,
++    "gsi": 8.3,
++    "infra": 0.7,
++    "pixelCount": 12617,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202068": {
++    "id": "3202068",
++    "name": "반곡관설동",
++    "parentRegion": "원주시",
++    "lat": 37.319,
++    "lng": 127.982,
++    "velocity": 54.6,
++    "gsi": 5.2,
++    "infra": 0.92,
++    "pixelCount": 1641,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202067": {
++    "id": "3202067",
++    "name": "무실동",
++    "parentRegion": "원주시",
++    "lat": 37.3279,
++    "lng": 127.9273,
++    "velocity": 62.5,
++    "gsi": 5.5,
++    "infra": 0.99,
++    "pixelCount": 1294,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202066": {
++    "id": "3202066",
++    "name": "행구동",
++    "parentRegion": "원주시",
++    "lat": 37.3423,
++    "lng": 127.9987,
++    "velocity": 59.3,
++    "gsi": 5.5,
++    "infra": 0.92,
++    "pixelCount": 1505,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202064": {
++    "id": "3202064",
++    "name": "봉산동",
++    "parentRegion": "원주시",
++    "lat": 37.3515,
++    "lng": 127.9774,
++    "velocity": 66.0,
++    "gsi": 5.6,
++    "infra": 0.94,
++    "pixelCount": 1287,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202063": {
++    "id": "3202063",
++    "name": "태장2동",
++    "parentRegion": "원주시",
++    "lat": 37.3837,
++    "lng": 127.9529,
++    "velocity": 66.6,
++    "gsi": 5.8,
++    "infra": 0.98,
++    "pixelCount": 1544,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202062": {
++    "id": "3202062",
++    "name": "태장1동",
++    "parentRegion": "원주시",
++    "lat": 37.3604,
++    "lng": 127.96,
++    "velocity": 61.4,
++    "gsi": 5.3,
++    "infra": 0.97,
++    "pixelCount": 303,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202061": {
++    "id": "3202061",
++    "name": "우산동",
++    "parentRegion": "원주시",
++    "lat": 37.3752,
++    "lng": 127.9335,
++    "velocity": 64.3,
++    "gsi": 5.6,
++    "infra": 0.96,
++    "pixelCount": 1612,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202060": {
++    "id": "3202060",
++    "name": "단계동",
++    "parentRegion": "원주시",
++    "lat": 37.3489,
++    "lng": 127.9318,
++    "velocity": 64.7,
++    "gsi": 5.7,
++    "infra": 0.99,
++    "pixelCount": 908,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202058": {
++    "id": "3202058",
++    "name": "학성동",
++    "parentRegion": "원주시",
++    "lat": 37.3524,
++    "lng": 127.9437,
++    "velocity": 62.5,
++    "gsi": 5.5,
++    "infra": 1.0,
++    "pixelCount": 80,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202057": {
++    "id": "3202057",
++    "name": "일산동",
++    "parentRegion": "원주시",
++    "lat": 37.3455,
++    "lng": 127.9463,
++    "velocity": 63.0,
++    "gsi": 5.5,
++    "infra": 1.0,
++    "pixelCount": 187,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202056": {
++    "id": "3202056",
++    "name": "단구동",
++    "parentRegion": "원주시",
++    "lat": 37.323,
++    "lng": 127.956,
++    "velocity": 60.3,
++    "gsi": 5.3,
++    "infra": 1.0,
++    "pixelCount": 732,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202055": {
++    "id": "3202055",
++    "name": "명륜2동",
++    "parentRegion": "원주시",
++    "lat": 37.3277,
++    "lng": 127.9435,
++    "velocity": 60.5,
++    "gsi": 5.3,
++    "infra": 1.0,
++    "pixelCount": 189,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202054": {
++    "id": "3202054",
++    "name": "명륜1동",
++    "parentRegion": "원주시",
++    "lat": 37.3365,
++    "lng": 127.9487,
++    "velocity": 61.4,
++    "gsi": 5.4,
++    "infra": 1.0,
++    "pixelCount": 212,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202053": {
++    "id": "3202053",
++    "name": "개운동",
++    "parentRegion": "원주시",
++    "lat": 37.3362,
++    "lng": 127.9588,
++    "velocity": 61.0,
++    "gsi": 5.4,
++    "infra": 1.0,
++    "pixelCount": 247,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202052": {
++    "id": "3202052",
++    "name": "원인동",
++    "parentRegion": "원주시",
++    "lat": 37.3423,
++    "lng": 127.9524,
++    "velocity": 61.9,
++    "gsi": 5.5,
++    "infra": 1.0,
++    "pixelCount": 80,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202051": {
++    "id": "3202051",
++    "name": "중앙동",
++    "parentRegion": "원주시",
++    "lat": 37.3576,
++    "lng": 127.9495,
++    "velocity": 62.7,
++    "gsi": 5.5,
++    "infra": 0.99,
++    "pixelCount": 439,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202038": {
++    "id": "3202038",
++    "name": "신림면",
++    "parentRegion": "원주시",
++    "lat": 37.2485,
++    "lng": 128.1117,
++    "velocity": -9.0,
++    "gsi": 1.6,
++    "infra": 0.39,
++    "pixelCount": 1739,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202037": {
++    "id": "3202037",
++    "name": "판부면",
++    "parentRegion": "원주시",
++    "lat": 37.2908,
++    "lng": 127.9752,
++    "velocity": 17.6,
++    "gsi": 4.2,
++    "infra": 0.68,
++    "pixelCount": 2266,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202036": {
++    "id": "3202036",
++    "name": "흥업면",
++    "parentRegion": "원주시",
++    "lat": 37.3011,
++    "lng": 127.9022,
++    "velocity": 52.1,
++    "gsi": 5.0,
++    "infra": 0.86,
++    "pixelCount": 4456,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202035": {
++    "id": "3202035",
++    "name": "귀래면",
++    "parentRegion": "원주시",
++    "lat": 37.1875,
++    "lng": 127.8965,
++    "velocity": -56.6,
++    "gsi": 4.4,
++    "infra": 0.62,
++    "pixelCount": 2031,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202034": {
++    "id": "3202034",
++    "name": "부론면",
++    "parentRegion": "원주시",
++    "lat": 37.2129,
++    "lng": 127.7853,
++    "velocity": 20.3,
++    "gsi": 3.6,
++    "infra": 0.72,
++    "pixelCount": 1696,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202033": {
++    "id": "3202033",
++    "name": "지정면",
++    "parentRegion": "원주시",
++    "lat": 37.3656,
++    "lng": 127.862,
++    "velocity": 60.4,
++    "gsi": 5.3,
++    "infra": 0.91,
++    "pixelCount": 7668,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202032": {
++    "id": "3202032",
++    "name": "호저면",
++    "parentRegion": "원주시",
++    "lat": 37.418,
++    "lng": 127.917,
++    "velocity": 62.0,
++    "gsi": 5.3,
++    "infra": 0.86,
++    "pixelCount": 5690,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202031": {
++    "id": "3202031",
++    "name": "소초면",
++    "parentRegion": "원주시",
++    "lat": 37.4115,
++    "lng": 127.9964,
++    "velocity": 59.6,
++    "gsi": 5.3,
++    "infra": 0.87,
++    "pixelCount": 7867,
++    "lastUpdated": "2026-06-19"
++  },
++  "3202011": {
++    "id": "3202011",
++    "name": "문막읍",
++    "parentRegion": "원주시",
++    "lat": 37.3009,
++    "lng": 127.8164,
++    "velocity": 53.7,
++    "gsi": 5.1,
++    "infra": 0.88,
++    "pixelCount": 7351,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201071": {
++    "id": "3201071",
++    "name": "신사우동",
++    "parentRegion": "춘천시",
++    "lat": 37.911,
++    "lng": 127.7309,
++    "velocity": 37.7,
++    "gsi": 3.2,
++    "infra": 0.95,
++    "pixelCount": 92,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201068": {
++    "id": "3201068",
++    "name": "강남동",
++    "parentRegion": "춘천시",
++    "lat": 37.8566,
++    "lng": 127.6996,
++    "velocity": 44.2,
++    "gsi": 3.5,
++    "infra": 0.81,
++    "pixelCount": 175,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201067": {
++    "id": "3201067",
++    "name": "퇴계동",
++    "parentRegion": "춘천시",
++    "lat": 37.8514,
++    "lng": 127.7325,
++    "velocity": 38.6,
++    "gsi": 3.2,
++    "infra": 0.92,
++    "pixelCount": 52,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201066": {
++    "id": "3201066",
++    "name": "석사동",
++    "parentRegion": "춘천시",
++    "lat": 37.8563,
++    "lng": 127.7535,
++    "velocity": 33.5,
++    "gsi": 2.9,
++    "infra": 0.97,
++    "pixelCount": 56,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201065": {
++    "id": "3201065",
++    "name": "효자3동",
++    "parentRegion": "춘천시",
++    "lat": 37.8727,
++    "lng": 127.7451,
++    "velocity": 37.0,
++    "gsi": 3.3,
++    "infra": 1.0,
++    "pixelCount": 6,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201064": {
++    "id": "3201064",
++    "name": "효자2동",
++    "parentRegion": "춘천시",
++    "lat": 37.867,
++    "lng": 127.7412,
++    "velocity": 39.6,
++    "gsi": 3.5,
++    "infra": 1.0,
++    "pixelCount": 23,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201063": {
++    "id": "3201063",
++    "name": "효자1동",
++    "parentRegion": "춘천시",
++    "lat": 37.8682,
++    "lng": 127.7287,
++    "velocity": 36.2,
++    "gsi": 3.2,
++    "infra": 1.0,
++    "pixelCount": 5,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201062": {
++    "id": "3201062",
++    "name": "후평3동",
++    "parentRegion": "춘천시",
++    "lat": 37.873,
++    "lng": 127.7573,
++    "velocity": 33.9,
++    "gsi": 3.0,
++    "infra": 1.0,
++    "pixelCount": 16,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201061": {
++    "id": "3201061",
++    "name": "후평2동",
++    "parentRegion": "춘천시",
++    "lat": 37.8738,
++    "lng": 127.749,
++    "velocity": 35.4,
++    "gsi": 3.1,
++    "infra": 1.0,
++    "pixelCount": 4,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201060": {
++    "id": "3201060",
++    "name": "후평1동",
++    "parentRegion": "춘천시",
++    "lat": 37.8846,
++    "lng": 127.7453,
++    "velocity": 36.1,
++    "gsi": 3.2,
++    "infra": 1.0,
++    "pixelCount": 19,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201058": {
++    "id": "3201058",
++    "name": "소양동",
++    "parentRegion": "춘천시",
++    "lat": 37.8807,
++    "lng": 127.732,
++    "velocity": 37.2,
++    "gsi": 3.3,
++    "infra": 1.0,
++    "pixelCount": 7,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201057": {
++    "id": "3201057",
++    "name": "근화동",
++    "parentRegion": "춘천시",
++    "lat": 37.8849,
++    "lng": 127.7128,
++    "velocity": 42.8,
++    "gsi": 3.5,
++    "infra": 0.87,
++    "pixelCount": 161,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201054": {
++    "id": "3201054",
++    "name": "약사명동",
++    "parentRegion": "춘천시",
++    "lat": 37.8725,
++    "lng": 127.7261,
++    "velocity": 35.8,
++    "gsi": 3.2,
++    "infra": 1.0,
++    "pixelCount": 5,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201053": {
++    "id": "3201053",
++    "name": "조운동",
++    "parentRegion": "춘천시",
++    "lat": 37.8756,
++    "lng": 127.7328,
++    "velocity": 37.4,
++    "gsi": 3.3,
++    "infra": 1.0,
++    "pixelCount": 5,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201052": {
++    "id": "3201052",
++    "name": "교동",
++    "parentRegion": "춘천시",
++    "lat": 37.8784,
++    "lng": 127.7383,
++    "velocity": 36.6,
++    "gsi": 3.2,
++    "infra": 1.0,
++    "pixelCount": 4,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201039": {
++    "id": "3201039",
++    "name": "북산면",
++    "parentRegion": "춘천시",
++    "lat": 37.9656,
++    "lng": 127.9098,
++    "velocity": -68.9,
++    "gsi": 4.6,
++    "infra": 0.51,
++    "pixelCount": 6255,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201038": {
++    "id": "3201038",
++    "name": "사북면",
++    "parentRegion": "춘천시",
++    "lat": 38.0207,
++    "lng": 127.6384,
++    "velocity": 50.9,
++    "gsi": 4.2,
++    "infra": 0.66,
++    "pixelCount": 4306,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201037": {
++    "id": "3201037",
++    "name": "서면",
++    "parentRegion": "춘천시",
++    "lat": 37.89,
++    "lng": 127.6466,
++    "velocity": 14.7,
++    "gsi": 2.3,
++    "infra": 0.54,
++    "pixelCount": 1884,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201036": {
++    "id": "3201036",
++    "name": "남산면",
++    "parentRegion": "춘천시",
++    "lat": 37.7791,
++    "lng": 127.6082,
++    "velocity": 26.5,
++    "gsi": 3.3,
++    "infra": 0.68,
++    "pixelCount": 2473,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201035": {
++    "id": "3201035",
++    "name": "남면",
++    "parentRegion": "춘천시",
++    "lat": 37.7332,
++    "lng": 127.5822,
++    "velocity": 25.8,
++    "gsi": 2.7,
++    "infra": 0.46,
++    "pixelCount": 1097,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201034": {
++    "id": "3201034",
++    "name": "동내면",
++    "parentRegion": "춘천시",
++    "lat": 37.8344,
++    "lng": 127.788,
++    "velocity": 4.7,
++    "gsi": 2.3,
++    "infra": 0.55,
++    "pixelCount": 437,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201033": {
++    "id": "3201033",
++    "name": "신동면",
++    "parentRegion": "춘천시",
++    "lat": 37.8071,
++    "lng": 127.71,
++    "velocity": 16.9,
++    "gsi": 3.2,
++    "infra": 0.79,
++    "pixelCount": 749,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201032": {
++    "id": "3201032",
++    "name": "동산면",
++    "parentRegion": "춘천시",
++    "lat": 37.7704,
++    "lng": 127.7808,
++    "velocity": 4.1,
++    "gsi": 1.9,
++    "infra": 0.59,
++    "pixelCount": 1115,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201031": {
++    "id": "3201031",
++    "name": "동면",
++    "parentRegion": "춘천시",
++    "lat": 37.8869,
++    "lng": 127.8391,
++    "velocity": -28.6,
++    "gsi": 3.0,
++    "infra": 0.43,
++    "pixelCount": 2234,
++    "lastUpdated": "2026-06-19"
++  },
++  "3201011": {
++    "id": "3201011",
++    "name": "신북읍",
++    "parentRegion": "춘천시",
++    "lat": 37.9532,
++    "lng": 127.7592,
++    "velocity": 17.8,
++    "gsi": 3.0,
++    "infra": 0.77,
++    "pixelCount": 863,
++    "lastUpdated": "2026-06-19"
++  }
++}
+\ No newline at end of file
+diff --git a/src/regions.js b/src/regions.js
+index 8e061b0..7228319 100644
+--- a/src/regions.js
++++ b/src/regions.js
+@@ -1,30 +1,10 @@
+-// 강원도 18개 시·군 + 가짜 침하 데이터
++// 강원도 18개 시·군 침하 데이터
+ // velocity 단위: mm/year (음수 = 침하, 양수 = 융기)
+-// 진짜 API 연결되면 이 데이터는 백엔드에서 받아올 예정
++// gsi_pixels.csv(InSAR 기반 GSI 픽셀)를 시군구 경계로 집계한 실측 데이터.
++// build_real_regions_data.py로 생성 — 갱신하려면 그 스크립트를 다시 실행할 것.
++import realRegionsData from './realRegionsData.json'
+ 
+-export const gangwonRegions = [
+-  // 시 (7개)
+-  { id: 'chuncheon', name: '춘천시', lat: 37.8813, lng: 127.7298, velocity: -1.8, gsi: 3.5, infra: 0.6, pixelCount: 21067, lastUpdated: '2025-04-15' },
+-  { id: 'wonju', name: '원주시', lat: 37.3422, lng: 127.9202, velocity: 50.8, gsi: 5.0, infra: 0.86, pixelCount: 52771, lastUpdated: '2025-04-15' },
+-  { id: 'gangneung', name: '강릉시', lat: 37.7519, lng: 128.8761, velocity: 66.4, gsi: 5.2, infra: 0.59, pixelCount: 25356, lastUpdated: '2025-04-15' },
+-  { id: 'donghae', name: '동해시', lat: 37.5247, lng: 129.1143, velocity: 76.8, gsi: 5.4, infra: 0.55, pixelCount: 4395, lastUpdated: '2025-04-15' },
+-  { id: 'taebaek', name: '태백시', lat: 37.1641, lng: 128.9856, velocity: 73.7, gsi: 5.7, infra: 0.7, pixelCount: 8912, lastUpdated: '2025-04-15' },
+-  { id: 'sokcho', name: '속초시', lat: 38.207, lng: 128.5918, velocity: 68.7, gsi: 3.6, infra: 0.13, pixelCount: 417, lastUpdated: '2025-04-15' },
+-  { id: 'samcheok', name: '삼척시', lat: 37.45, lng: 129.1654, velocity: 67.8, gsi: 5.3, infra: 0.64, pixelCount: 38996, lastUpdated: '2025-04-15' },
+-
+-  // 군 (11개)
+-  { id: 'hongcheon', name: '홍천군', lat: 37.697, lng: 127.8889, velocity: 1.6, gsi: 3.7, infra: 0.64, pixelCount: 44144, lastUpdated: '2025-04-15' },
+-  { id: 'hoengseong', name: '횡성군', lat: 37.4914, lng: 127.9851, velocity: 58.9, gsi: 5.2, infra: 0.78, pixelCount: 48744, lastUpdated: '2025-04-15' },
+-  { id: 'yeongwol', name: '영월군', lat: 37.1836, lng: 128.4615, velocity: 19.3, gsi: 3.8, infra: 0.61, pixelCount: 23907, lastUpdated: '2025-04-15' },
+-  { id: 'pyeongchang', name: '평창군', lat: 37.3706, lng: 128.3902, velocity: -13.3, gsi: 3.1, infra: 0.56, pixelCount: 28156, lastUpdated: '2025-04-15' },
+-  { id: 'jeongseon', name: '정선군', lat: 37.3805, lng: 128.6608, velocity: 16.2, gsi: 4.0, infra: 0.61, pixelCount: 32243, lastUpdated: '2025-04-15' },
+-  { id: 'cheorwon', name: '철원군', lat: 38.1466, lng: 127.3134, velocity: 76.5, gsi: 5.9, infra: 0.72, pixelCount: 40364, lastUpdated: '2025-04-15' },
+-  { id: 'hwacheon', name: '화천군', lat: 38.1062, lng: 127.7081, velocity: 27.8, gsi: 4.1, infra: 0.64, pixelCount: 28753, lastUpdated: '2025-04-15' },
+-  { id: 'yanggu', name: '양구군', lat: 38.1099, lng: 127.99, velocity: -61.1, gsi: 4.8, infra: 0.62, pixelCount: 22928, lastUpdated: '2025-04-15' },
+-  { id: 'inje', name: '인제군', lat: 38.0697, lng: 128.1707, velocity: -56.7, gsi: 4.7, infra: 0.6, pixelCount: 54107, lastUpdated: '2025-04-15' },
+-  { id: 'goseong', name: '고성군', lat: 38.3806, lng: 128.4677, velocity: 64.9, gsi: 4.3, infra: 0.4, pixelCount: 7363, lastUpdated: '2025-04-15' },
+-  { id: 'yangyang', name: '양양군', lat: 38.0754, lng: 128.6189, velocity: 74.9, gsi: 5.2, infra: 0.5, pixelCount: 12517, lastUpdated: '2025-04-15' },
+-]
++export const gangwonRegions = realRegionsData
+ 
+ // 침하 속도에 따라 위험 등급 계산 (지도 색칠용)
+ export function getRiskLevel(velocity) {
+@@ -225,8 +205,9 @@ export function withParticle(word, particle) {
+ // risk_score = |velocity|×0.35 + |acceleration|×0.20 + (1−coherence)×0.20 + 산사태근접도×0.25
+ // GSI = 10 × (1 − risk_score)   (높을수록 안전)
+ //
+-// ⚠️ 현재 velocity 외 지표(acceleration·coherence·landslideProximity)는 시연용 가짜값.
+-//    백엔드 InSAR/AI 처리값으로 교체 예정. 교체 시 "가짜값 생성" 블록만 region.xxx로 변경.
++// velocity·gsi·landslideProximity(=region.infra)는 gsi_pixels.csv 실측 집계값(realRegionsData.json) 사용 중.
++// ⚠️ acceleration·coherence는 아직 시연용 가짜값 (아래 "가짜값 생성" 블록).
++//    Phase 2: 실측 coherence(avgSpatialCoh.h5)와 시계열 가속도 연동 예정.
+ 
+ const gsiCache = new Map()
+ 
+@@ -273,8 +254,6 @@ export function getGSIBreakdown(region) {
+     ? parseFloat(region.gsi.toFixed(1))
+     : parseFloat((10 * (1 - riskScore)).toFixed(1))
+ 
+-  const gsi = parseFloat((10 * (1 - riskScore)).toFixed(1))
+-
+   const result = {
+     gsi,
+     raw: {
+diff --git a/src/submunicipalities.js b/src/submunicipalities.js
+index 68fff00..be91bb7 100644
+--- a/src/submunicipalities.js
++++ b/src/submunicipalities.js
+@@ -3,6 +3,7 @@
+ 
+ import koreaSubmunicipalities from './korea-submunicipalities.json'
+ import { gangwonRegions } from './regions'
++import realSubmunicipalityData from './realSubmunicipalityData.json'
+ 
+ // 강원도 읍·면·동만 필터링
+ export const gangwonSubmunicipalities = {
+@@ -22,17 +23,18 @@ const codeToRegionMap = {
+   '3205': '태백시',
+   '3206': '속초시',
+   '3207': '삼척시',
+-  '3208': '홍천군',
+-  '3209': '횡성군',
+-  '3210': '영월군',
+-  '3211': '평창군',
+-  '3212': '정선군',
+-  '3213': '철원군',
+-  '3214': '화천군',
+-  '3215': '양구군',
+-  '3216': '인제군',
+-  '3217': '고성군',
+-  '3218': '양양군',
++  // ⚠️ 군 지역 code는 3208~3218이 아니라 3231~3241부터 시작 (실제 korea-submunicipalities.json 기준으로 수정)
++  '3231': '홍천군',
++  '3232': '횡성군',
++  '3233': '영월군',
++  '3234': '평창군',
++  '3235': '정선군',
++  '3236': '철원군',
++  '3237': '화천군',
++  '3238': '양구군',
++  '3239': '인제군',
++  '3240': '고성군',
++  '3241': '양양군',
+   // 강원특별자치도 코드 추가 (2023년 이후)
+   '5101': '춘천시',
+   '5102': '원주시',
+@@ -142,11 +144,15 @@ if (!parentRegion) {
+   const center = getCenter(feature)
+   if (!center) return null
+ 
+-  // 특별 읍·면·동인지 확인
++  // 특별 읍·면·동인지 확인 (발표 스토리텔링용 — 실제값보다 우선)
+   const name = feature.properties.name
+   const special = specialSubmunicipalities[name]
+ 
+-  // 데이터 생성
++  // gsi_pixels.csv를 읍면동 경계로 집계한 실측값 (build_real_submunicipality_data.py로 생성).
++  // GSI 픽셀이 매칭되지 않은 일부 읍면동(예: 태백시 일부 동)은 real이 없어 가짜값으로 fallback.
++  const real = realSubmunicipalityData[code]
++
++  // 데이터 생성: 특별 스토리텔링 > 실측 집계값 > 가짜값(fallback) 우선순위
+   const data = {
+     id: code,
+     name: name,
+@@ -155,9 +161,14 @@ if (!parentRegion) {
+     lng: center.lng,
+     velocity: special
+       ? special.velocity
+-      : generateFakeVelocity(parentRegion.velocity),
++      : real
++        ? real.velocity
++        : generateFakeVelocity(parentRegion.velocity),
++    gsi: real ? real.gsi : null,
++    infra: real ? real.infra : null,
++    pixelCount: real ? real.pixelCount : null,
+     reason: special ? special.reason : null,
+-    lastUpdated: '2025-04-15',
++    lastUpdated: real ? real.lastUpdated : '2025-04-15',
+   }
+ 
+   submunicipalityDataCache.set(code, data)
+-- 
+2.53.0
+
