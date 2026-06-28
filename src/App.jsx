@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap, Pane } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap } from "react-leaflet";
 import { gangwonRegions, getRiskLevel } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 import SidePanel from './SidePanel'
@@ -395,22 +395,6 @@ return (
             data={submunicipalitiesGeoJSON}
             style={submunicipalityStyle}
             onEachFeature={onEachSubmunicipality}
-          />
-        )}
-
-        {/* 시·군 경계선 — 읍·면·동 모드에서도 항상 굵게 표시 */}
-        {isDetailMode && (
-          <GeoJSON
-            key="muni-borders-overlay"
-            data={gangwonMunicipalitiesGeoJSON}
-            style={{
-              fillColor: 'transparent',
-              fillOpacity: 0,
-              color: '#1e3a8a'  ,
-              weight: 3.5,
-              opacity: 0.6,
-            }}
-            interactive={false}
           />
         )}
 
