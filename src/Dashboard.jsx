@@ -3,6 +3,19 @@ import { gangwonRegions, getGSIBreakdown } from './regions'
 import * as XLSX from 'xlsx'
 import realSubmunicipalityData from './realSubmunicipalityData.json'
 import DashboardChat from './DashboardChat'
+import { gangwonSubmunicipalities } from './submunicipalities'
+import koreaMunicipalities from './korea-municipalities.json'
+
+// 읍면동 code → 이름 / 시군 5자리 code → 이름 (요약 보고서용)
+const _codeToSubName = {}
+gangwonSubmunicipalities.features.forEach((ft) => {
+  _codeToSubName[ft.properties.code] = ft.properties.name
+})
+const _sigunCodeToName = {}
+koreaMunicipalities.features.forEach((ft) => {
+  const c = String(ft.properties.code ?? '')
+  if (c.startsWith('32') && c.length === 5) _sigunCodeToName[c] = ft.properties.name
+})
 
 // ── 모듈 레벨: 읍면동 분위수 기반 등급 시스템 ──────────────────
 // 185개 읍면동 GSI를 정렬 후 rank 기반으로 5% / 15% / 40% 경계 계산
@@ -27,6 +40,14 @@ const _Q5  = _sortedGSIs[_I5]   // 1.60
 const _Q15 = _sortedGSIs[_I15]  // 2.10
 const _Q40 = _sortedGSIs[_I40]  // 3.30
 
+// 등급 + 권장조치 (요약 보고서용)
+function getGradeAction(gsi) {
+  if (gsi < _Q5)  return { grade: '위험', action: '즉시 현장 정밀점검 필요' }
+  if (gsi < _Q15) return { grade: '경계', action: '우선 점검 대상 지정 권고' }
+  if (gsi < _Q40) return { grade: '주의', action: '정기 모니터링 유지' }
+  return            { grade: '안정', action: '현상 유지' }
+}
+
 // 개별 항목 등급 함수 (getRFGrade 대체)
 function getQuantileGrade(gsi) {
   if (gsi < _Q5)  return { label: '위험', color: '#dc2626', emoji: '🔴' }
@@ -47,6 +68,73 @@ function Dashboard({ onNavigate }) {
     if (gsi < _Q15) return '정밀진단 권장'
     if (gsi < _Q40) return '정기 점검'
     return '모니터링 유지'
+  }
+
+  // 읍면동 요약 보고서 .xlsx (ExcelJS — 헤더 색상, 위험 행 강조)
+  const handleReportDownload = async () => {
+    const { default: ExcelJS } = await import('exceljs')
+
+    const sorted = Object.entries(realSubmunicipalityData)
+      .map(([code, v]) => {
+        const { grade, action } = getGradeAction(v.gsi)
+        return {
+          name:     _codeToSubName[code] ?? code,
+          sigun:    _sigunCodeToName[code.slice(0, 5)] ?? '?',
+          gsi:      v.gsi,
+          grade,
+          velocity: v.velocity,
+          infra:    Math.round(v.infra * 100),
+          action,
+        }
+      })
+      .sort((a, b) => a.gsi - b.gsi)
+
+    const wb = new ExcelJS.Workbook()
+    wb.creator = '강산지킴이'
+    const ws = wb.addWorksheet('읍면동 지반안정 요약')
+
+    ws.columns = [
+      { header: '순위',                key: 'rank',     width: 6  },
+      { header: '읍면동명',            key: 'name',     width: 13 },
+      { header: '시군명',              key: 'sigun',    width: 10 },
+      { header: 'GSI 점수',            key: 'gsi',      width: 10 },
+      { header: '등급',                key: 'grade',    width: 8  },
+      { header: '연간변위속도(mm/yr)', key: 'velocity', width: 20 },
+      { header: '인프라근접도(%)',     key: 'infra',    width: 16 },
+      { header: '권장조치',            key: 'action',   width: 28 },
+    ]
+
+    // 헤더 스타일 — 진한 파란색 배경, 흰 글씨
+    ws.getRow(1).height = 22
+    ws.getRow(1).eachCell((cell) => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } }
+      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 11 }
+      cell.alignment = { horizontal: 'center', vertical: 'middle' }
+      cell.border = { bottom: { style: 'medium', color: { argb: 'FF1E40AF' } } }
+    })
+
+    // 데이터 행 추가 + 위험 행 연한 빨강 배경
+    sorted.forEach((item, i) => {
+      const row = ws.addRow({ rank: i + 1, ...item })
+      if (item.grade === '위험') {
+        row.eachCell((cell) => {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF2F2' } }
+        })
+      }
+    })
+
+    ws.views = [{ state: 'frozen', ySplit: 1 }]
+
+    const buffer = await wb.xlsx.writeBuffer()
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `강원도_읍면동_지반안정_요약보고서_${new Date().toISOString().slice(0, 10)}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   // .xlsx 다운로드 (시군 우선순위 목록)
@@ -124,18 +212,34 @@ function Dashboard({ onNavigate }) {
 
         {/* 다운로드 */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginBottom: '12px', flexWrap: 'wrap' }}>
+          {/* 1. 요약 보고서 — 초록색 강조 */}
+          <button
+            onClick={handleReportDownload}
+            style={{
+              display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
+              gap: '2px', background: '#16a34a', color: 'white',
+              padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+            }}
+          >
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>📋 요약 보고서 다운로드</span>
+            <span style={{ fontSize: '11px', opacity: 0.85 }}>읍면동 185개 · GSI 등급 · 권장조치 포함</span>
+          </button>
+
+          {/* 2. 상세 픽셀 데이터 — 회색 보조 */}
           <a
             href="/gsi_danger_pixels.xlsx"
             download="gsi_danger_pixels.xlsx"
             style={{
               display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
-              gap: '2px', background: '#16a34a', color: 'white',
+              gap: '2px', background: '#6b7280', color: 'white',
               padding: '10px 16px', borderRadius: '8px', textDecoration: 'none',
             }}
           >
-            <span style={{ fontSize: '14px', fontWeight: '700' }}>📊 위험 픽셀 데이터 (.xlsx)</span>
-            <span style={{ fontSize: '11px', opacity: 0.85 }}>위험등급 384,034개 픽셀 좌표/GSI/변위속도 포함</span>
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>📊 상세 픽셀 데이터 (전문가용)</span>
+            <span style={{ fontSize: '11px', opacity: 0.85 }}>위험·경계 픽셀 38만행, 정확한 좌표 포함</span>
           </a>
+
+          {/* 3. 히트맵 PNG */}
           <a
             href="/gsi_heatmap.png"
             download="gsi_heatmap.png"
