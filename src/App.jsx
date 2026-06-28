@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap } from 'react-leaflet'
-import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, useMap, Pane } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap, Pane } from "react-leaflet";
 import { gangwonRegions, getRiskLevel } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 import SidePanel from './SidePanel'
