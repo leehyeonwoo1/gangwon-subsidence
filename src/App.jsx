@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, useMap, Pane } from 'react-leaflet'
 import { gangwonRegions, getRiskLevel } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 import SidePanel from './SidePanel'
@@ -57,6 +58,22 @@ function ZoomTracker({ onZoomChange }) {
 function App() {
   // 페이지 전환: 'landing' 또는 'map'
   const [currentPage, setCurrentPage] = useState('landing')
+
+// 페이지 전환 시 브라우저 히스토리에 기록 → 뒤로가기 동작 정상화
+const navigateTo = (page) => {
+  setCurrentPage(page)
+  window.history.pushState({ page }, '', `/${page === 'landing' ? '' : page}`)
+}
+
+// 브라우저 뒤로가기/앞으로가기 감지
+useEffect(() => {
+  const handlePopState = (e) => {
+    const page = e.state?.page || 'landing'
+    setCurrentPage(page)
+  }
+  window.addEventListener('popstate', handlePopState)
+  return () => window.removeEventListener('popstate', handlePopState)
+}, [])
   
   // 지도 페이지일 때만 body에 스크롤 막는 클래스 추가
   useEffect(() => {
@@ -314,8 +331,8 @@ layer.on('click', function () {
 if (currentPage === 'landing') {
   return (
     <>
-      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
-      <LandingPage onStart={(dest) => setCurrentPage(dest || 'map')} />
+      <Header currentPage={currentPage} onNavigate={navigateTo} />
+      <LandingPage onStart={(dest) => navigateTo(dest || 'map')} />
     </>
   )
 }
@@ -323,8 +340,8 @@ if (currentPage === 'landing') {
 if (currentPage === 'dashboard') {
   return (
     <>
-      <Header currentPage={currentPage} onNavigate={setCurrentPage} />
-      <Dashboard onNavigate={setCurrentPage} />
+      <Header currentPage={currentPage} onNavigate={navigateTo} />
+      <Dashboard onNavigate={navigateTo} />
     </>
   )
 }
@@ -332,7 +349,7 @@ if (currentPage === 'dashboard') {
 // 지도 페이지
 return (
   <>
-    <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+    <Header currentPage={currentPage} onNavigate={navigateTo} />
     <div style={{ width: '100vw', height: '100vh', position: 'relative', paddingTop: '60px', boxSizing: 'border-box' }}>
       <MapContainer
   center={gangwonCenter}
@@ -379,6 +396,22 @@ return (
             data={submunicipalitiesGeoJSON}
             style={submunicipalityStyle}
             onEachFeature={onEachSubmunicipality}
+          />
+        )}
+
+        {/* 시·군 경계선 — 읍·면·동 모드에서도 항상 굵게 표시 */}
+        {isDetailMode && (
+          <GeoJSON
+            key="muni-borders-overlay"
+            data={gangwonMunicipalitiesGeoJSON}
+            style={{
+              fillColor: 'transparent',
+              fillOpacity: 0,
+              color: '#1e3a8a'  ,
+              weight: 3.5,
+              opacity: 0.6,
+            }}
+            interactive={false}
           />
         )}
 
