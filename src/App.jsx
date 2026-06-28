@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap } from 'react-leaflet'
 import { gangwonRegions, getRiskLevel } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 import SidePanel from './SidePanel'
@@ -75,6 +75,7 @@ function App() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1300)
   const [currentZoom, setCurrentZoom] = useState(9)
+  const [showHeatmap, setShowHeatmap] = useState(false)
 
   // 줌 11 이상이면 읍·면·동 모드
   const isDetailMode = currentZoom >= 11
@@ -389,6 +390,16 @@ return (
           style={provinceStyle}
         />
 
+        {/* GSI 픽셀 히트맵 오버레이 */}
+        {showHeatmap && (
+          <ImageOverlay
+            url="/gsi_heatmap.png"
+            bounds={[[36.715861, 126.860542], [38.903812, 130.205295]]}
+            opacity={0.6}
+            zIndex={400}
+          />
+        )}
+
         {/* 시·군 마커 */}
         {gangwonRegions.map((region) => {
           const risk = getRiskLevel(region.velocity)
@@ -537,19 +548,35 @@ return (
         <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>
           Sentinel-1 SAR · InSAR 분석
         </div>
-        <div
-          style={{
-            fontSize: '11px',
-            color: isDetailMode ? '#dc2626' : '#3b82f6',
-            marginTop: '8px',
-            fontWeight: '600',
-            padding: '4px 8px',
-            background: isDetailMode ? '#fef2f2' : '#eff6ff',
-            borderRadius: '6px',
-            display: 'inline-block',
-          }}
-        >
-          {isDetailMode ? '🔍 읍·면·동 단위' : '🗺️ 시·군 단위'}
+        <div style={{ display: 'flex', gap: '6px', marginTop: '8px', alignItems: 'center' }}>
+          <div
+            style={{
+              fontSize: '11px',
+              color: isDetailMode ? '#dc2626' : '#3b82f6',
+              fontWeight: '600',
+              padding: '4px 8px',
+              background: isDetailMode ? '#fef2f2' : '#eff6ff',
+              borderRadius: '6px',
+            }}
+          >
+            {isDetailMode ? '🔍 읍·면·동 단위' : '🗺️ 시·군 단위'}
+          </div>
+          <button
+            onClick={() => setShowHeatmap(v => !v)}
+            style={{
+              fontSize: '11px',
+              fontWeight: '600',
+              padding: '4px 8px',
+              borderRadius: '6px',
+              border: 'none',
+              cursor: 'pointer',
+              background: showHeatmap ? '#fef3c7' : '#f3f4f6',
+              color: showHeatmap ? '#92400e' : '#6b7280',
+              transition: 'all 0.15s',
+            }}
+          >
+            {showHeatmap ? '🟡 픽셀 히트맵 ON' : '⬜ 픽셀 히트맵'}
+          </button>
         </div>
       </div>
       </div>
