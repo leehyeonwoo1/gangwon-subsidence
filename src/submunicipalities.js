@@ -3,6 +3,7 @@
 
 import koreaSubmunicipalities from './korea-submunicipalities.json'
 import { gangwonRegions } from './regions'
+import realSubmunicipalityData from './realSubmunicipalityData.json'
 
 // 강원도 읍·면·동만 필터링
 export const gangwonSubmunicipalities = {
@@ -22,17 +23,18 @@ const codeToRegionMap = {
   '3205': '태백시',
   '3206': '속초시',
   '3207': '삼척시',
-  '3208': '홍천군',
-  '3209': '횡성군',
-  '3210': '영월군',
-  '3211': '평창군',
-  '3212': '정선군',
-  '3213': '철원군',
-  '3214': '화천군',
-  '3215': '양구군',
-  '3216': '인제군',
-  '3217': '고성군',
-  '3218': '양양군',
+  // ⚠️ 군 지역 code는 3208~3218이 아니라 3231~3241부터 시작 (실제 korea-submunicipalities.json 기준으로 수정)
+  '3231': '홍천군',
+  '3232': '횡성군',
+  '3233': '영월군',
+  '3234': '평창군',
+  '3235': '정선군',
+  '3236': '철원군',
+  '3237': '화천군',
+  '3238': '양구군',
+  '3239': '인제군',
+  '3240': '고성군',
+  '3241': '양양군',
   // 강원특별자치도 코드 추가 (2023년 이후)
   '5101': '춘천시',
   '5102': '원주시',
@@ -142,11 +144,15 @@ if (!parentRegion) {
   const center = getCenter(feature)
   if (!center) return null
 
-  // 특별 읍·면·동인지 확인
+  // 특별 읍·면·동인지 확인 (발표 스토리텔링용 — 실제값보다 우선)
   const name = feature.properties.name
   const special = specialSubmunicipalities[name]
 
-  // 데이터 생성
+  // gsi_pixels.csv를 읍면동 경계로 집계한 실측값 (build_real_data.py로 생성).
+  // GSI 픽셀이 매칭되지 않은 일부 읍면동은 real이 없어 가짜값으로 fallback.
+  const real = realSubmunicipalityData[code]
+
+  // 데이터 생성: 특별 스토리텔링 > 실측 집계값 > 가짜값(fallback) 우선순위
   const data = {
     id: code,
     name: name,
@@ -155,9 +161,14 @@ if (!parentRegion) {
     lng: center.lng,
     velocity: special
       ? special.velocity
-      : generateFakeVelocity(parentRegion.velocity),
+      : real
+        ? real.velocity
+        : generateFakeVelocity(parentRegion.velocity),
+    gsi: real ? real.gsi : null,
+    infra: real ? real.infra : null,
+    pixelCount: real ? real.pixelCount : null,
     reason: special ? special.reason : null,
-    lastUpdated: '2025-04-15',
+    lastUpdated: real ? real.lastUpdated : '2025-04-15',
   }
 
   submunicipalityDataCache.set(code, data)

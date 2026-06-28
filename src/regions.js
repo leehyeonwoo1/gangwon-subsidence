@@ -1,30 +1,11 @@
-// 강원도 18개 시·군 + 가짜 침하 데이터
+// 강원도 18개 시·군 침하 데이터
 // velocity 단위: mm/year (음수 = 침하, 양수 = 융기)
-// 진짜 API 연결되면 이 데이터는 백엔드에서 받아올 예정
+// gsi_pixels.csv(InSAR 기반 GSI v0.7, 9개 날짜 제외 버전)를 시군구 경계로 집계한 실측 데이터.
+// build_real_data.py로 생성 — 갱신하려면 그 스크립트를 다시 실행할 것.
+import realRegionsData from './realRegionsData.json'
+import realTimeSeriesData from './realTimeSeriesData.json'
 
-export const gangwonRegions = [
-  // 시 (7개)
-  { id: 'chuncheon', name: '춘천시', lat: 37.8813, lng: 127.7298, velocity: -1.8, gsi: 3.5, infra: 0.6, pixelCount: 21067, lastUpdated: '2025-04-15' },
-  { id: 'wonju', name: '원주시', lat: 37.3422, lng: 127.9202, velocity: 50.8, gsi: 5.0, infra: 0.86, pixelCount: 52771, lastUpdated: '2025-04-15' },
-  { id: 'gangneung', name: '강릉시', lat: 37.7519, lng: 128.8761, velocity: 66.4, gsi: 5.2, infra: 0.59, pixelCount: 25356, lastUpdated: '2025-04-15' },
-  { id: 'donghae', name: '동해시', lat: 37.5247, lng: 129.1143, velocity: 76.8, gsi: 5.4, infra: 0.55, pixelCount: 4395, lastUpdated: '2025-04-15' },
-  { id: 'taebaek', name: '태백시', lat: 37.1641, lng: 128.9856, velocity: 73.7, gsi: 5.7, infra: 0.7, pixelCount: 8912, lastUpdated: '2025-04-15' },
-  { id: 'sokcho', name: '속초시', lat: 38.207, lng: 128.5918, velocity: 68.7, gsi: 3.6, infra: 0.13, pixelCount: 417, lastUpdated: '2025-04-15' },
-  { id: 'samcheok', name: '삼척시', lat: 37.45, lng: 129.1654, velocity: 67.8, gsi: 5.3, infra: 0.64, pixelCount: 38996, lastUpdated: '2025-04-15' },
-
-  // 군 (11개)
-  { id: 'hongcheon', name: '홍천군', lat: 37.697, lng: 127.8889, velocity: 1.6, gsi: 3.7, infra: 0.64, pixelCount: 44144, lastUpdated: '2025-04-15' },
-  { id: 'hoengseong', name: '횡성군', lat: 37.4914, lng: 127.9851, velocity: 58.9, gsi: 5.2, infra: 0.78, pixelCount: 48744, lastUpdated: '2025-04-15' },
-  { id: 'yeongwol', name: '영월군', lat: 37.1836, lng: 128.4615, velocity: 19.3, gsi: 3.8, infra: 0.61, pixelCount: 23907, lastUpdated: '2025-04-15' },
-  { id: 'pyeongchang', name: '평창군', lat: 37.3706, lng: 128.3902, velocity: -13.3, gsi: 3.1, infra: 0.56, pixelCount: 28156, lastUpdated: '2025-04-15' },
-  { id: 'jeongseon', name: '정선군', lat: 37.3805, lng: 128.6608, velocity: 16.2, gsi: 4.0, infra: 0.61, pixelCount: 32243, lastUpdated: '2025-04-15' },
-  { id: 'cheorwon', name: '철원군', lat: 38.1466, lng: 127.3134, velocity: 76.5, gsi: 5.9, infra: 0.72, pixelCount: 40364, lastUpdated: '2025-04-15' },
-  { id: 'hwacheon', name: '화천군', lat: 38.1062, lng: 127.7081, velocity: 27.8, gsi: 4.1, infra: 0.64, pixelCount: 28753, lastUpdated: '2025-04-15' },
-  { id: 'yanggu', name: '양구군', lat: 38.1099, lng: 127.99, velocity: -61.1, gsi: 4.8, infra: 0.62, pixelCount: 22928, lastUpdated: '2025-04-15' },
-  { id: 'inje', name: '인제군', lat: 38.0697, lng: 128.1707, velocity: -56.7, gsi: 4.7, infra: 0.6, pixelCount: 54107, lastUpdated: '2025-04-15' },
-  { id: 'goseong', name: '고성군', lat: 38.3806, lng: 128.4677, velocity: 64.9, gsi: 4.3, infra: 0.4, pixelCount: 7363, lastUpdated: '2025-04-15' },
-  { id: 'yangyang', name: '양양군', lat: 38.0754, lng: 128.6189, velocity: 74.9, gsi: 5.2, infra: 0.5, pixelCount: 12517, lastUpdated: '2025-04-15' },
-]
+export const gangwonRegions = realRegionsData
 
 // 침하 속도에 따라 위험 등급 계산 (지도 색칠용)
 export function getRiskLevel(velocity) {
@@ -102,12 +83,19 @@ export function getRiskGuide(velocity) {
   }
 }
 
-// 시계열 가짜 데이터 생성 (시민용 그래프)
-export function generateTimeSeries(velocity) {
+// 시계열 (시민용 그래프)
+// timeseries.h5(InSAR 누적변위, 9개 날짜 제외 버전)를 시군/읍면동 경계로 월별 집계한
+// 실측 데이터(realTimeSeriesData.json, build_real_timeseries.py로 생성). 키는 시군은
+// id(예: 'inje'), 읍면동은 7자리 code. 매칭되는 실측값이 없으면 velocity 기반 가짜값으로 fallback.
+export function generateTimeSeries(key, velocity = 0) {
+  const real = realTimeSeriesData[key]
+  if (real) return real
+
+  // fallback: 실측 데이터가 없는 일부 읍면동(예: 태백시 일부 동)용 가짜 시계열
   const months = [
-    '2024-05', '2024-06', '2024-07', '2024-08',
-    '2024-09', '2024-10', '2024-11', '2024-12',
-    '2025-01', '2025-02', '2025-03', '2025-04',
+    '2025-05', '2025-06', '2025-07', '2025-08',
+    '2025-09', '2025-10', '2025-11', '2025-12',
+    '2026-01', '2026-02', '2026-03', '2026-04',
   ]
   const monthlyRate = velocity / 12
   let cumulative = 0
@@ -217,8 +205,9 @@ export function withParticle(word, particle) {
 // risk_score = |velocity|×0.35 + |acceleration|×0.20 + (1−coherence)×0.20 + 산사태근접도×0.25
 // GSI = 10 × (1 − risk_score)   (높을수록 안전)
 //
-// ⚠️ 현재 velocity 외 지표(acceleration·coherence·landslideProximity)는 시연용 가짜값.
-//    백엔드 InSAR/AI 처리값으로 교체 예정. 교체 시 "가짜값 생성" 블록만 region.xxx로 변경.
+// velocity·gsi·landslideProximity(=region.infra)는 gsi_pixels.csv 실측 집계값(realRegionsData.json) 사용 중.
+// ⚠️ acceleration·coherence는 아직 시연용 가짜값 (아래 "가짜값 생성" 블록).
+//    Phase 2: 실측 coherence(avgSpatialCoh.h5)와 시계열 가속도 연동 예정.
 
 const gsiCache = new Map()
 
@@ -232,67 +221,22 @@ export function getGSIBreakdown(region) {
   if (gsiCache.has(key)) return gsiCache.get(key)
 
   const velocity = region.velocity
+  const infra    = region.infra ?? 0
 
-  // --- 가짜값 생성 (velocity 기반, 지역마다 고정 시드) ---
-  let seed = 0
-  for (let i = 0; i < key.length; i++) seed += key.charCodeAt(i)
-  const rand = (offset) => {
-    const x = Math.sin(seed + offset) * 10000
-    return x - Math.floor(x)
-  }
-  const acceleration = Math.abs(velocity) * 0.15 + rand(1) * 1.5
-  const coherence = 0.4 + rand(2) * 0.55
-  // infra(인프라 근접도)는 팀장 진짜값 사용, 없으면 가짜 생성
-  const landslideProximity = (region.infra !== undefined && region.infra !== null)
-    ? region.infra
-    : Math.min(1, normalize(Math.abs(velocity), 0, 15) * 0.6 + rand(3) * 0.4)
+  // riskScore는 gsi 실측값이 없는 시군의 fallback용 (velocity + infra만 사용)
+  const nVelocity = normalize(Math.abs(velocity), 0, 119.8)
+  const riskScore = nVelocity * 0.35 + infra * 0.25
 
-  // --- 각 지표를 0~1 위험도로 정규화 ---
-  const nVelocity = normalize(Math.abs(velocity), 0, 80) // 진짜 InSAR 범위(~80mm/yr)에 맞춤
-  const nAccel = normalize(acceleration, 0, 4)
-  const nCoherence = 1 - coherence
-  const nLandslide = landslideProximity
-
-  // --- 가중합 (멘토 공식) ---
-  const wVelocity = nVelocity * 0.35
-  const wAccel = nAccel * 0.20
-  const wCoherence = nCoherence * 0.20
-  const wLandslide = nLandslide * 0.25
-  const riskScore = wVelocity + wAccel + wCoherence + wLandslide
-
+  const gsi = (region.gsi !== undefined && region.gsi !== null)
+    ? parseFloat(region.gsi.toFixed(1))
+    : parseFloat((10 * (1 - riskScore)).toFixed(1))
   // ⚠️ 팀장 패치 적용 전까지는 우리 공식으로 계산
   // 패치 적용 후 → region.gsi 우선 사용으로 되돌리기
   const gsi = parseFloat((10 * (1 - riskScore)).toFixed(1))
 
   const result = {
     gsi,
-    raw: {
-      velocity,
-      acceleration: parseFloat(acceleration.toFixed(2)),
-      coherence: parseFloat(coherence.toFixed(2)),
-      landslideProximity: parseFloat(landslideProximity.toFixed(2)),
-    },
-    // fill = 정규화 위험도(0~1) → 막대 길이. value = 가중 기여도(%).
-    contributions: [
-      {
-        label: velocity < 0 ? '침하 속도' : velocity > 0 ? '융기 속도' : '수직 변위',
-        key: 'velocity', weight: 0.35, fill: nVelocity,
-        value: parseFloat((wVelocity * 100).toFixed(1)), raw: `${velocity} mm/yr`,
-      },
-      {
-        label: '가속도', key: 'acceleration', weight: 0.20, fill: nAccel,
-        value: parseFloat((wAccel * 100).toFixed(1)), raw: `${acceleration.toFixed(2)} mm/yr²`,
-      },
-      {
-        label: '신호 불확실성', key: 'coherence', weight: 0.20, fill: nCoherence,
-        value: parseFloat((wCoherence * 100).toFixed(1)), raw: `신뢰도 ${coherence.toFixed(2)}`,
-      },
-      {
-        label: '인프라 근접도', key: 'landslide', weight: 0.25, fill: nLandslide,
-        value: parseFloat((wLandslide * 100).toFixed(1)), raw: `${(landslideProximity * 100).toFixed(0)}%`,
-      },
-    ],
-    lowConfidence: coherence < 0.5,
+    raw: { velocity, infra },
   }
 
   gsiCache.set(key, result)

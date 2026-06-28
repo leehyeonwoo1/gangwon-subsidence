@@ -410,7 +410,84 @@ function LandingPage({ onStart }) {
         </div>
       </section>
 
-      {/* ============ Section 6: 마지막 CTA ============ */}
+      {/* ============ Section 6: GSI 상세 설명 ============ */}
+      <section
+        style={{
+          padding: '100px 20px',
+          background: 'white',
+        }}
+      >
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <SectionLabel color="#1e40af">📡 방법론</SectionLabel>
+            <SectionTitle>
+              강산지킴이 GSI<br />
+              <span style={{ fontSize: '0.7em', color: '#4b5563', fontWeight: '600' }}>(지반안정지수)란?</span>
+            </SectionTitle>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))',
+              gap: '20px',
+            }}
+          >
+            {/* 측정 방법 */}
+            <GsiCard
+              color="#1e40af"
+              bgColor="#eff6ff"
+              icon="🛰️"
+              title="측정 방법"
+              items={[
+                'Sentinel-1 SAR 위성 데이터(2022~2026, 4년치) SBAS-InSAR 기법으로 지표 변위 측정',
+                '강원도 전역 250만 픽셀, 294개 간섭도 처리',
+              ]}
+            />
+
+            {/* 등급 계산 방식 */}
+            <GsiCard
+              color="#059669"
+              bgColor="#f0fdf4"
+              icon="📊"
+              title="등급 계산 방식"
+              items={[
+                '연간 지표 변위 속도(mm/yr)를 강원도 전체 95%ile 기준으로 정규화',
+                '인프라 근접도(도로/건물) 가중치 적용',
+                '안정(60%) / 주의(25%) / 경계(10%) / 위험(5%) 분위수 기반 등급화',
+              ]}
+            />
+
+            {/* 검증 결과 */}
+            <GsiCard
+              color="#7c3aed"
+              bgColor="#f5f3ff"
+              icon="✅"
+              title="검증 결과"
+              items={[
+                '실제 산사태 3건(봉평면, 용평면, 정선 피암터널) 검증 완료',
+                '강원도 산사태 이력 143건 중 61.5% 통계적 유의 일치',
+                '2023년 태풍 카눈 관련 이력 거의 100% 일치',
+              ]}
+            />
+
+            {/* 데이터 한계 */}
+            <GsiCard
+              color="#d97706"
+              bgColor="#fffbeb"
+              icon="⚠️"
+              title="데이터 한계"
+              items={[
+                '산림 80% 산악지형 특성상 절대 변위값보다 상대적 위험 순위가 신뢰도 높음',
+                '초기 관측 기간(2022년) 데이터는 정밀도 제한적',
+                'GNSS 보정은 Phase 2 예정',
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ============ Section 7: 마지막 CTA ============ */}
       <section
         style={{
           padding: '100px 20px',
@@ -719,6 +796,70 @@ function CredCard({ title, description }) {
       <div style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5' }}>
         {description}
       </div>
+    </div>
+  )
+}
+
+function GsiCard({ color, bgColor, icon, title, items }) {
+  return (
+    <div
+      style={{
+        background: bgColor,
+        border: `1px solid ${color}25`,
+        borderRadius: '16px',
+        padding: '28px 28px',
+        transition: 'all 0.25s',
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.boxShadow = `0 8px 24px ${color}15`
+        e.currentTarget.style.transform = 'translateY(-3px)'
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.boxShadow = 'none'
+        e.currentTarget.style.transform = 'translateY(0)'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+        <span style={{ fontSize: '22px' }}>{icon}</span>
+        <h3
+          style={{
+            fontSize: '16px',
+            fontWeight: '700',
+            color: color,
+            margin: 0,
+            letterSpacing: '-0.3px',
+          }}
+        >
+          {title}
+        </h3>
+      </div>
+      <ul style={{ margin: 0, padding: '0 0 0 18px', listStyle: 'none' }}>
+        {items.map((item, i) => (
+          <li
+            key={i}
+            style={{
+              fontSize: '14px',
+              color: '#374151',
+              lineHeight: '1.7',
+              marginBottom: i < items.length - 1 ? '8px' : 0,
+              paddingLeft: '4px',
+              position: 'relative',
+            }}
+          >
+            <span
+              style={{
+                position: 'absolute',
+                left: '-14px',
+                color: color,
+                fontWeight: '700',
+              }}
+            >
+              ·
+            </span>
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

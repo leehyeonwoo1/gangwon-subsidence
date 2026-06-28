@@ -170,7 +170,7 @@ function SidePanel({ region, onClose, isChatOpen }) {
   const civic = useMemo(() => getCivicExplanation(region?.velocity ?? 0), [region])
 
   const timeSeriesData = useMemo(() => {
-    const result = generateTimeSeries(region?.velocity ?? 0, region?.id || region?.name || '')
+    const result = generateTimeSeries(region?.id || region?.name || '', region?.velocity ?? 0)
     return Array.isArray(result) ? result : (result?.data ? result : { months: [], data: [] })
   }, [region])
 
@@ -185,15 +185,18 @@ function SidePanel({ region, onClose, isChatOpen }) {
     ? timeSeriesData.map(d => d.displacement)
     : timeSeriesData.data || []
 
-  // 안전 지수 시계열 (그래프용)
-  const safetyTimeSeries = data.map(v => getSafetyIndex(v).score)
+  // 그래프는 "안전 지수(0~10)"가 아니라 누적 변위(mm)를 그대로 표시한다.
+  // getSafetyIndex()의 임계값(-15/-10/-5/-2mm/yr)은 연간 velocity 기준으로 설계된 것이라
+  // 월별 "누적" 변위(최대 수백 mm)를 그대로 넣으면 단위가 안 맞아 며칠 안에 0점으로
+  // 바닥을 찍어버리는 버그가 있었음. 그래서 변위값 자체를 보여주는 쪽으로 변경.
+  const displacementTimeSeries = data
 
   const chartData = {
     labels: months,
     datasets: [
       {
-        label: '안전 지수',
-        data: safetyTimeSeries,
+        label: '누적 변위',
+        data: displacementTimeSeries,
         borderColor: safety.level.color,
         backgroundColor: `${safety.level.color}33`,
         tension: 0.3,
@@ -212,13 +215,13 @@ function SidePanel({ region, onClose, isChatOpen }) {
       legend: { display: false },
       title: {
         display: true,
-        text: '📊 최근 12개월 안전 지수 변화',
+        text: '📊 최근 12개월 누적 변위 변화',
         font: { size: isSubmunicipality ? 11 : 13, weight: '600' },
         color: '#374151',
       },
       tooltip: {
         callbacks: {
-          label: (ctx) => `안전 지수: ${ctx.parsed.y.toFixed(1)}/10`,
+          label: (ctx) => `누적 변위: ${ctx.parsed.y.toFixed(1)}mm`,
         },
       },
     },
@@ -228,13 +231,10 @@ function SidePanel({ region, onClose, isChatOpen }) {
         ticks: { font: { size: 9 } },
       },
       y: {
-        min: 0,
-        max: 10,
-        title: { display: true, text: '안전 지수 (0~10점)', font: { size: 10 } },
+        title: { display: true, text: '누적 변위 (mm, 음수=침하)', font: { size: 10 } },
         grid: { color: '#f3f4f6' },
         ticks: {
           font: { size: 9 },
-          stepSize: 2,
         },
       },
     },
