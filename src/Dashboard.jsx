@@ -1,38 +1,58 @@
 import { useState } from 'react'
-import { gangwonRegions, getGSIBreakdown, getRFGrade } from './regions'
+import { gangwonRegions, getGSIBreakdown } from './regions'
 import * as XLSX from 'xlsx'
 import realSubmunicipalityData from './realSubmunicipalityData.json'
 
+// ── 모듈 레벨: 읍면동 분위수 기반 등급 시스템 ──────────────────
+// 185개 읍면동 GSI를 정렬 후 rank 기반으로 5% / 15% / 40% 경계 계산
+const _sortedGSIs = Object.values(realSubmunicipalityData)
+  .map((r) => r.gsi)
+  .sort((a, b) => a - b)
+const _n  = _sortedGSIs.length               // 185
+const _I5  = Math.floor(_n * 0.05)           // 9
+const _I15 = Math.floor(_n * 0.15)           // 27
+const _I40 = Math.floor(_n * 0.40)           // 74
+
+// 분위수 기반 카운트 (rank 기반 → 타이 문제 없이 정확)
+const QUANTILE_COUNTS = {
+  danger:   _I5,                // 9
+  gyeonggye: _I15 - _I5,       // 18
+  juui:     _I40 - _I15,       // 47
+  anjeong:  _n   - _I40,       // 111
+}
+
+// rank 경계의 실제 GSI 임계값
+const _Q5  = _sortedGSIs[_I5]   // 1.60
+const _Q15 = _sortedGSIs[_I15]  // 2.10
+const _Q40 = _sortedGSIs[_I40]  // 3.30
+
+// 개별 항목 등급 함수 (getRFGrade 대체)
+function getQuantileGrade(gsi) {
+  if (gsi < _Q5)  return { label: '위험', color: '#dc2626', emoji: '🔴' }
+  if (gsi < _Q15) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  if (gsi < _Q40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
+  return            { label: '안정', color: '#16a34a', emoji: '🟢' }
+}
+// ───────────────────────────────────────────────────────────────
+
 function Dashboard({ onNavigate }) {
-  // GSI 낮은 순(위험한 순) 정렬 — 화면 점수와 순위 일치
+  // GSI 낮은 순(위험한 순) 정렬
   const ranked = [...gangwonRegions].sort((a, b) => getGSIBreakdown(a).gsi - getGSIBreakdown(b).gsi)
 
-  // 선택된 지역 (기본: 1순위)
   const [selected, setSelected] = useState(ranked[0])
 
-  // GSI 등급별 권장 조치
   const actionOf = (gsi) => {
-    if (gsi < 4) return '긴급 정밀진단'
-    if (gsi < 6) return '정밀진단 권장'
-    if (gsi < 8) return '정기 점검'
+    if (gsi < _Q5)  return '긴급 정밀진단'
+    if (gsi < _Q15) return '정밀진단 권장'
+    if (gsi < _Q40) return '정기 점검'
     return '모니터링 유지'
   }
 
-  // 요약 통계 — 읍면동 185개 기준 (realSubmunicipalityData)
-  const counts = { danger: 0, gyeonggye: 0, juui: 0, anjeong: 0 }
-  Object.values(realSubmunicipalityData).forEach((r) => {
-    const g = r.gsi
-    if (g < 4) counts.danger++
-    else if (g < 6) counts.gyeonggye++
-    else if (g < 8) counts.juui++
-    else counts.anjeong++
-  })
-
-  // .xlsx 다운로드
+  // .xlsx 다운로드 (시군 우선순위 목록)
   const handleDownload = () => {
     const rows = ranked.map((r, i) => {
-      const bd = getGSIBreakdown(r)
-      const grade = getRFGrade(bd.gsi)
+      const bd    = getGSIBreakdown(r)
+      const grade = getQuantileGrade(bd.gsi)
       return {
         '순위': i + 1,
         '지역': r.name,
@@ -87,16 +107,19 @@ function Dashboard({ onNavigate }) {
             시연용 샘플 데이터
           </span>
         </div>
-        <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 24px' }}>
+        <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px' }}>
           강원도 18개 시·군 · GSI 낮은 순(위험) 정렬 · 위성 InSAR 광역 분석 기반
         </p>
+        <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 20px' }}>
+          등급 기준: 읍면동 185개 분위수 — 위험 하위 5% / 경계 5~15% / 주의 15~40% / 안정 40%+
+        </p>
 
-        {/* 요약 카드 (읍면동 185개 기준) */}
+        {/* 요약 카드 — 읍면동 185개 rank 기반 분위수 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-          <SummaryCard label="🔴 위험" value={counts.danger} unit="읍면동" color="#dc2626" />
-          <SummaryCard label="🟠 경계" value={counts.gyeonggye} unit="읍면동" color="#ea580c" />
-          <SummaryCard label="🟡 주의" value={counts.juui} unit="읍면동" color="#ca8a04" />
-          <SummaryCard label="🟢 안정" value={counts.anjeong} unit="읍면동" color="#16a34a" />
+          <SummaryCard label="🔴 위험" value={QUANTILE_COUNTS.danger}   sub={`GSI < ${_Q5}`}  color="#dc2626" />
+          <SummaryCard label="🟠 경계" value={QUANTILE_COUNTS.gyeonggye} sub={`${_Q5}~${_Q15}`} color="#ea580c" />
+          <SummaryCard label="🟡 주의" value={QUANTILE_COUNTS.juui}      sub={`${_Q15}~${_Q40}`} color="#ca8a04" />
+          <SummaryCard label="🟢 안정" value={QUANTILE_COUNTS.anjeong}   sub={`GSI ≥ ${_Q40}`} color="#16a34a" />
         </div>
 
         {/* 다운로드 */}
@@ -129,15 +152,15 @@ function Dashboard({ onNavigate }) {
 
         {/* 메인: 좌측 목록 + 우측 상세 */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '16px', alignItems: 'start' }}>
-          {/* 좌측: Top-N 목록 */}
+          {/* 좌측: 시군 순위 목록 */}
           <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', fontWeight: '700', fontSize: '14px', color: '#374151' }}>
               위험 지점 순위 (클릭하면 상세 분석)
             </div>
             <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
               {ranked.map((r, i) => {
-                const bd = getGSIBreakdown(r)
-                const grade = getRFGrade(bd.gsi)
+                const bd    = getGSIBreakdown(r)
+                const grade = getQuantileGrade(bd.gsi)
                 const isSelected = selected?.id === r.id
                 return (
                   <div
@@ -156,8 +179,11 @@ function Dashboard({ onNavigate }) {
                       {i + 1}
                     </span>
                     <span style={{ flex: 1, fontWeight: '600', color: '#111827' }}>{r.name}</span>
-                    <span style={{ fontSize: '13px', color: '#6b7280' }}>{r.velocity} mm/yr</span>
-                    <span style={{ fontWeight: '700', color: grade.color, minWidth: '40px', textAlign: 'right' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '600', color: grade.color,
+                      background: `${grade.color}15`, padding: '2px 6px', borderRadius: '4px' }}>
+                      {grade.emoji} {grade.label}
+                    </span>
+                    <span style={{ fontWeight: '700', color: grade.color, minWidth: '36px', textAlign: 'right' }}>
                       {bd.gsi}
                     </span>
                   </div>
@@ -190,23 +216,23 @@ function Dashboard({ onNavigate }) {
   )
 }
 
-function SummaryCard({ label, value, unit, color }) {
+function SummaryCard({ label, value, sub, color }) {
   return (
     <div style={{ background: 'white', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
       <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
         <span style={{ fontSize: '26px', fontWeight: '800', color: color, letterSpacing: '-0.5px' }}>{value}</span>
-        {unit && <span style={{ fontSize: '11px', color: '#9ca3af', fontWeight: '500' }}>{unit}</span>}
+        <span style={{ fontSize: '11px', color: '#9ca3af', fontWeight: '500' }}>읍면동</span>
       </div>
+      {sub && <div style={{ fontSize: '10px', color: '#d1d5db', marginTop: '2px' }}>GSI {sub}</div>}
     </div>
   )
 }
 
-// 우측 상세 패널 — GSI 분해 + 근거 (멘토 2-5 "왜 이 등급인가")
 function DetailPanel({ region, actionOf }) {
   if (!region) return null
-  const bd = getGSIBreakdown(region)
-  const grade = getRFGrade(bd.gsi)
+  const bd    = getGSIBreakdown(region)
+  const grade = getQuantileGrade(bd.gsi)
 
   return (
     <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', padding: '20px', position: 'sticky', top: '80px' }}>
@@ -224,7 +250,7 @@ function DetailPanel({ region, actionOf }) {
       <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
         GSI <strong style={{ color: grade.color, fontSize: '16px' }}>{bd.gsi}</strong> / 10 · {grade.label}
         <span style={{ margin: '0 6px', color: '#d1d5db' }}>|</span>
-        AI 등급 <strong style={{ color: grade.color }}>{grade.emoji} {grade.label}</strong>
+        분위수 등급 <strong style={{ color: grade.color }}>{grade.emoji} {grade.label}</strong>
       </div>
 
       {/* GSI 점수 분해 막대 */}
