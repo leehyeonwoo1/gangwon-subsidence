@@ -245,8 +245,8 @@ export function getGSIBreakdown(region) {
     : Math.min(1, normalize(Math.abs(velocity), 0, 15) * 0.6 + rand(3) * 0.4)
 
   // --- 각 지표를 0~1 위험도로 정규화 ---
-  const nVelocity = normalize(Math.abs(velocity), 0, 80) // 진짜 InSAR 범위(~80mm/yr)에 맞춤
-  const nAccel = normalize(acceleration, 0, 4)
+  const nVelocity = normalize(Math.abs(velocity), 0, 119.8) // realSubmunicipalityData.json 실측 max
+  const nAccel = normalize(acceleration, 0, 13.0) // 18개 시군 시뮬레이션 최댓값(속초시 12.29) 기준
   const nCoherence = 1 - coherence
   const nLandslide = landslideProximity
 
