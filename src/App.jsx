@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap } from 'react-leaflet'
 import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, useMap, Pane } from 'react-leaflet'
 import { gangwonRegions, getRiskLevel } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
@@ -92,9 +91,9 @@ useEffect(() => {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isWideScreen, setIsWideScreen] = useState(window.innerWidth >= 1300)
   const [currentZoom, setCurrentZoom] = useState(9)
-  const [showMunicipalities, setShowMunicipalities] = useState(true)
-  const [showHeatmap, setShowHeatmap] = useState(false)
-  const [showSubmunicipalities, setShowSubmunicipalities] = useState(false)
+
+  // 줌 11 이상이면 읍·면·동 모드
+  const isDetailMode = currentZoom >= 11
 
   // ============================================
   // useEffect 효과들
@@ -379,8 +378,8 @@ return (
           />
         )}
 
-        {/* 시·군 단위 */}
-        {showMunicipalities && (
+        {/* 시·군 단위 (줌 10 이하) */}
+        {!isDetailMode && (
           <GeoJSON
             key={`muni-${gangwonMunicipalitiesGeoJSON.features.length}`}
             data={gangwonMunicipalitiesGeoJSON}
@@ -389,8 +388,8 @@ return (
           />
         )}
 
-        {/* 읍·면·동 단위 */}
-        {showSubmunicipalities && (
+        {/* 읍·면·동 단위 (줌 11 이상) */}
+        {isDetailMode && (
           <GeoJSON
             key={`sub-${submunicipalitiesGeoJSON.features.length}`}
             data={submunicipalitiesGeoJSON}
@@ -421,16 +420,6 @@ return (
           data={gangwonGeoJSON}
           style={provinceStyle}
         />
-
-        {/* GSI 픽셀 히트맵 오버레이 */}
-        {showHeatmap && (
-          <ImageOverlay
-            url="/gsi_heatmap.png"
-            bounds={[[36.715861, 126.860542], [38.903812, 130.205295]]}
-            opacity={0.6}
-            zIndex={400}
-          />
-        )}
 
         {/* 시·군 마커 */}
         {gangwonRegions.map((region) => {
@@ -504,35 +493,6 @@ return (
         onClose={() => setIsChatOpen(false)}
         onRegionSelect={(region) => selectRegionSmart(region)}
       />
-
-      {/* 픽셀 히트맵 범례 (히트맵 ON일 때만) */}
-      {showHeatmap && (
-        <div
-          className="legend-card"
-          style={{
-            position: 'absolute',
-            bottom: '104px',
-            left: '24px',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-            zIndex: 1000,
-            fontSize: '13px',
-            lineHeight: '1.9',
-          }}
-        >
-          <div style={{ fontWeight: '700', marginBottom: '6px', fontSize: '13px', letterSpacing: '-0.3px' }}>
-            픽셀 단위 위험도 (InSAR)
-          </div>
-          <div>🔴 위험 (하위 5%)</div>
-          <div>🟠 경계 (하위 5~15%)</div>
-          <div>🟡 주의 (하위 15~40%)</div>
-          <div style={{ color: '#9ca3af' }}>□ 안정 또는 데이터 없음</div>
-          <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>
-            Sentinel-1 SAR 250만 픽셀 기반
-          </div>
-        </div>
-      )}
 
       {/* 챗봇 플로팅 버튼 */}
       {!isChatOpen && (
@@ -609,33 +569,19 @@ return (
         <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>
           Sentinel-1 SAR · InSAR 분석
         </div>
-        <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '10px', marginBottom: '5px', fontWeight: '600', letterSpacing: '0.5px' }}>
-          레이어
-        </div>
-        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-          {[
-            { key: 'muni', label: '시군 단위', state: showMunicipalities, toggle: () => setShowMunicipalities(v => !v) },
-            { key: 'heat', label: '픽셀 히트맵', state: showHeatmap, toggle: () => setShowHeatmap(v => !v) },
-            { key: 'sub',  label: '읍면동 단위', state: showSubmunicipalities, toggle: () => setShowSubmunicipalities(v => !v) },
-          ].map(({ key, label, state, toggle }) => (
-            <button
-              key={key}
-              onClick={toggle}
-              style={{
-                fontSize: '11px',
-                fontWeight: '600',
-                padding: '4px 9px',
-                borderRadius: '6px',
-                border: `1.5px solid ${state ? '#3b82f6' : '#e5e7eb'}`,
-                cursor: 'pointer',
-                background: state ? '#eff6ff' : '#f9fafb',
-                color: state ? '#1d4ed8' : '#9ca3af',
-                transition: 'all 0.15s',
-              }}
-            >
-              {state ? '●' : '○'} {label}
-            </button>
-          ))}
+        <div
+          style={{
+            fontSize: '11px',
+            color: isDetailMode ? '#dc2626' : '#3b82f6',
+            marginTop: '8px',
+            fontWeight: '600',
+            padding: '4px 8px',
+            background: isDetailMode ? '#fef2f2' : '#eff6ff',
+            borderRadius: '6px',
+            display: 'inline-block',
+          }}
+        >
+          {isDetailMode ? '🔍 읍·면·동 단위' : '🗺️ 시·군 단위'}
         </div>
       </div>
       </div>
