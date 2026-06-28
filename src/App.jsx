@@ -486,6 +486,7 @@ return (
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
         onRegionSelect={(region) => selectRegionSmart(region)}
+        selectedRegion={selectedRegion}
       />
 
       {/* 픽셀 히트맵 범례 (히트맵 ON일 때만) */}
