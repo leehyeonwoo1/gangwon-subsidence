@@ -229,68 +229,19 @@ export function getGSIBreakdown(region) {
   if (gsiCache.has(key)) return gsiCache.get(key)
 
   const velocity = region.velocity
+  const infra    = region.infra ?? 0
 
-  // --- 가짜값 생성 (velocity 기반, 지역마다 고정 시드) ---
-  let seed = 0
-  for (let i = 0; i < key.length; i++) seed += key.charCodeAt(i)
-  const rand = (offset) => {
-    const x = Math.sin(seed + offset) * 10000
-    return x - Math.floor(x)
-  }
-  const acceleration = Math.abs(velocity) * 0.15 + rand(1) * 1.5
-  const coherence = 0.4 + rand(2) * 0.55
-  // infra(인프라 근접도)는 팀장 진짜값 사용, 없으면 가짜 생성
-  const landslideProximity = (region.infra !== undefined && region.infra !== null)
-    ? region.infra
-    : Math.min(1, normalize(Math.abs(velocity), 0, 15) * 0.6 + rand(3) * 0.4)
+  // riskScore는 gsi 실측값이 없는 시군의 fallback용 (velocity + infra만 사용)
+  const nVelocity = normalize(Math.abs(velocity), 0, 119.8)
+  const riskScore = nVelocity * 0.35 + infra * 0.25
 
-  // --- 각 지표를 0~1 위험도로 정규화 ---
-  const nVelocity = normalize(Math.abs(velocity), 0, 119.8) // realSubmunicipalityData.json 실측 max
-  const nAccel = normalize(acceleration, 0, 13.0) // 18개 시군 시뮬레이션 최댓값(속초시 12.29) 기준
-  const nCoherence = 1 - coherence
-  const nLandslide = landslideProximity
-
-  // --- 가중합 (멘토 공식) ---
-  const wVelocity = nVelocity * 0.35
-  const wAccel = nAccel * 0.20
-  const wCoherence = nCoherence * 0.20
-  const wLandslide = nLandslide * 0.25
-  const riskScore = wVelocity + wAccel + wCoherence + wLandslide
-
-  // 팀장이 계산한 진짜 GSI가 있으면 그걸 우선 사용 (없으면 공식으로 계산)
   const gsi = (region.gsi !== undefined && region.gsi !== null)
     ? parseFloat(region.gsi.toFixed(1))
     : parseFloat((10 * (1 - riskScore)).toFixed(1))
 
   const result = {
     gsi,
-    raw: {
-      velocity,
-      acceleration: parseFloat(acceleration.toFixed(2)),
-      coherence: parseFloat(coherence.toFixed(2)),
-      landslideProximity: parseFloat(landslideProximity.toFixed(2)),
-    },
-    // fill = 정규화 위험도(0~1) → 막대 길이. value = 가중 기여도(%).
-    contributions: [
-      {
-        label: velocity < 0 ? '침하 속도' : velocity > 0 ? '융기 속도' : '수직 변위',
-        key: 'velocity', weight: 0.35, fill: nVelocity,
-        value: parseFloat((wVelocity * 100).toFixed(1)), raw: `${velocity} mm/yr`,
-      },
-      {
-        label: '가속도', key: 'acceleration', weight: 0.20, fill: nAccel,
-        value: parseFloat((wAccel * 100).toFixed(1)), raw: `${acceleration.toFixed(2)} mm/yr²`,
-      },
-      {
-        label: '신호 불확실성', key: 'coherence', weight: 0.20, fill: nCoherence,
-        value: parseFloat((wCoherence * 100).toFixed(1)), raw: `신뢰도 ${coherence.toFixed(2)}`,
-      },
-      {
-        label: '인프라 근접도', key: 'landslide', weight: 0.25, fill: nLandslide,
-        value: parseFloat((wLandslide * 100).toFixed(1)), raw: `${(landslideProximity * 100).toFixed(0)}%`,
-      },
-    ],
-    lowConfidence: coherence < 0.5,
+    raw: { velocity, infra },
   }
 
   gsiCache.set(key, result)

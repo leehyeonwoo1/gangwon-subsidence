@@ -57,10 +57,9 @@ function Dashboard({ onNavigate }) {
         '순위': i + 1,
         '지역': r.name,
         'GSI(0~10)': bd.gsi,
-        '수직변위(mm/year)': r.velocity,
-        '가속도(mm/yr²)': bd.raw.acceleration,
-        '신호신뢰도': bd.raw.coherence,
-        '산사태근접도': bd.raw.landslideProximity,
+        '연간변위속도(mm/yr)': bd.raw.velocity,
+        '변위방향': bd.raw.velocity < 0 ? '침하' : bd.raw.velocity > 0 ? '융기' : '안정',
+        '인프라근접도(%)': Math.round(bd.raw.infra * 100),
         '등급': grade.label,
         '권장조치': actionOf(bd.gsi),
         '최종갱신': r.lastUpdated,
@@ -234,69 +233,75 @@ function DetailPanel({ region, actionOf }) {
   const bd    = getGSIBreakdown(region)
   const grade = getQuantileGrade(bd.gsi)
 
+  const velDir   = bd.raw.velocity < 0 ? '침하' : bd.raw.velocity > 0 ? '융기' : '안정'
+  const velColor = bd.raw.velocity < 0 ? '#dc2626' : bd.raw.velocity > 0 ? '#2563eb' : '#16a34a'
+
+  const dataRows = [
+    {
+      label: '연간 변위 속도',
+      value: `${bd.raw.velocity} mm/yr`,
+      tag: velDir,
+      tagColor: velColor,
+    },
+    {
+      label: '인프라 근접도',
+      value: `${Math.round(bd.raw.infra * 100)}%`,
+      tag: null,
+    },
+    {
+      label: '데이터 신뢰도',
+      value: '측정 중',
+      tag: 'Phase 2 예정',
+      tagColor: '#9ca3af',
+    },
+  ]
+
   return (
     <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', padding: '20px', position: 'sticky', top: '80px' }}>
       {/* 헤더 */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827' }}>
-          {grade.emoji} {region.name}
-        </div>
-        {bd.lowConfidence && (
-          <span style={{ fontSize: '11px', background: '#fef9c3', color: '#854d0e', padding: '3px 8px', borderRadius: '6px', fontWeight: '700' }}>
-            ⚠️ 신호 불안정
-          </span>
-        )}
+      <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '4px' }}>
+        {grade.emoji} {region.name}
       </div>
       <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
-        GSI <strong style={{ color: grade.color, fontSize: '16px' }}>{bd.gsi}</strong> / 10 · {grade.label}
+        GSI <strong style={{ color: grade.color, fontSize: '16px' }}>{bd.gsi}</strong> / 10
         <span style={{ margin: '0 6px', color: '#d1d5db' }}>|</span>
         분위수 등급 <strong style={{ color: grade.color }}>{grade.emoji} {grade.label}</strong>
       </div>
 
-      {/* GSI 점수 분해 막대 */}
+      {/* 실측 데이터 */}
       <div style={{ background: '#f9fafb', borderRadius: '10px', padding: '14px', marginBottom: '14px' }}>
         <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151', marginBottom: '10px' }}>
-          📊 위험도 기여 분석 <span style={{ fontWeight: '500', color: '#9ca3af' }}>(왜 이 점수인가)</span>
+          📊 실측 데이터
         </div>
-        {bd.contributions.map((c) => (
-          <div key={c.key} style={{ marginBottom: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '3px' }}>
-              <span style={{ color: '#374151', fontWeight: '600' }}>
-                {c.label}
-                <span style={{ color: '#9ca3af', fontWeight: '400', marginLeft: '4px' }}>가중치 {(c.weight * 100).toFixed(0)}%</span>
-              </span>
-              <span style={{ color: '#6b7280' }}>{c.raw}</span>
-            </div>
-            <div style={{ background: '#e5e7eb', borderRadius: '4px', height: '8px', overflow: 'hidden' }}>
-              <div style={{
-                width: `${c.fill * 100}%`,
-                height: '100%',
-                background: c.key === 'velocity' ? '#dc2626'
-                  : c.key === 'acceleration' ? '#ea580c'
-                  : c.key === 'coherence' ? '#0891b2'
-                  : '#7c3aed',
-                borderRadius: '4px',
-                transition: 'width 0.3s',
-              }} />
-            </div>
+        {dataRows.map(({ label, value, tag, tagColor }) => (
+          <div
+            key={label}
+            style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '8px 0', borderBottom: '1px solid #f3f4f6',
+            }}
+          >
+            <span style={{ fontSize: '13px', color: '#6b7280' }}>{label}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{value}</span>
+              {tag && (
+                <span style={{
+                  fontSize: '11px', fontWeight: '600', color: tagColor,
+                  background: `${tagColor}18`, padding: '2px 7px', borderRadius: '4px',
+                }}>
+                  {tag}
+                </span>
+              )}
+            </span>
           </div>
         ))}
-        <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed #e5e7eb' }}>
-          GSI = 10 × (1 − 위험도 가중합) = <strong style={{ color: grade.color }}>{bd.gsi}</strong>
+        <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '10px' }}>
+          GSI 산정: 강원도 250만 픽셀 분위수 기반
         </div>
-      </div>
-
-      {/* 판단 근거 */}
-      <div style={{ background: '#f9fafb', borderRadius: '10px', padding: '14px', fontSize: '13px', color: '#374151', lineHeight: '1.8' }}>
-        <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151', marginBottom: '6px' }}>📋 판단 근거</div>
-        <div>• {bd.raw.velocity < 0 ? '침하' : bd.raw.velocity > 0 ? '융기' : '변위'} 속도: <strong>{bd.raw.velocity} mm/yr</strong></div>
-        <div>• 변위 가속도: <strong>{bd.raw.acceleration} mm/yr²</strong> <span style={{ fontSize: '11px', color: '#9ca3af' }}>({bd.raw.acceleration > 0 ? '가속 중' : bd.raw.acceleration < 0 ? '감속 중' : '일정'})</span></div>
-        <div>• 신호 신뢰도: <strong>{bd.raw.coherence}</strong> {bd.lowConfidence && <span style={{ color: '#ca8a04' }}>(낮음)</span>}</div>
-        <div>• 산사태 근접도: <strong>{(bd.raw.landslideProximity * 100).toFixed(0)}%</strong></div>
       </div>
 
       {/* 권장 조치 */}
-      <div style={{ marginTop: '14px', background: `${grade.color}11`, border: `1px solid ${grade.color}33`, borderRadius: '10px', padding: '12px 14px' }}>
+      <div style={{ background: `${grade.color}11`, border: `1px solid ${grade.color}33`, borderRadius: '10px', padding: '12px 14px' }}>
         <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px' }}>권장 조치</div>
         <div style={{ fontSize: '15px', fontWeight: '700', color: grade.color }}>{actionOf(bd.gsi)}</div>
       </div>
