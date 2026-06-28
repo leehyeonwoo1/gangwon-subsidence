@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { gangwonRegions, getGSIBreakdown } from './regions'
 import * as XLSX from 'xlsx'
 import realSubmunicipalityData from './realSubmunicipalityData.json'
+import DashboardChat from './DashboardChat'
 
 // ── 모듈 레벨: 읍면동 분위수 기반 등급 시스템 ──────────────────
 // 185개 읍면동 GSI를 정렬 후 rank 기반으로 5% / 15% / 40% 경계 계산
@@ -211,6 +212,20 @@ function Dashboard({ onNavigate }) {
           ← 처음으로
         </button>
       </div>
+
+      {/* AI 챗봇 — 선택된 시군 컨텍스트 자동 포함 */}
+      {(() => {
+        const bd    = getGSIBreakdown(selected)
+        const grade = getQuantileGrade(bd.gsi)
+        return (
+          <DashboardChat
+            region={selected}
+            gsi={bd.gsi}
+            grade={grade.label}
+            velocity={selected?.velocity}
+          />
+        )
+      })()}
     </div>
   )
 }
