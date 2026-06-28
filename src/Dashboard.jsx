@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { gangwonRegions, getGSIBreakdown, getRFGrade } from './regions'
 import * as XLSX from 'xlsx'
+import realSubmunicipalityData from './realSubmunicipalityData.json'
 
 function Dashboard({ onNavigate }) {
   // GSI 낮은 순(위험한 순) 정렬 — 화면 점수와 순위 일치
@@ -17,10 +18,10 @@ function Dashboard({ onNavigate }) {
     return '모니터링 유지'
   }
 
-  // 요약 통계 — 멘토 2-4 등급 기준(GSI): 8+ 안정 / 6~8 주의 / 4~6 경계 / 4미만 위험
+  // 요약 통계 — 읍면동 185개 기준 (realSubmunicipalityData)
   const counts = { danger: 0, gyeonggye: 0, juui: 0, anjeong: 0 }
-  gangwonRegions.forEach((r) => {
-    const g = getGSIBreakdown(r).gsi
+  Object.values(realSubmunicipalityData).forEach((r) => {
+    const g = r.gsi
     if (g < 4) counts.danger++
     else if (g < 6) counts.gyeonggye++
     else if (g < 8) counts.juui++
@@ -90,27 +91,40 @@ function Dashboard({ onNavigate }) {
           강원도 18개 시·군 · GSI 낮은 순(위험) 정렬 · 위성 InSAR 광역 분석 기반
         </p>
 
-        {/* 요약 카드 */}
+        {/* 요약 카드 (읍면동 185개 기준) */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-          <SummaryCard label="🔴 위험" value={counts.danger} color="#dc2626" />
-          <SummaryCard label="🟠 경계" value={counts.gyeonggye} color="#ea580c" />
-          <SummaryCard label="🟡 주의" value={counts.juui} color="#ca8a04" />
-          <SummaryCard label="🟢 안정" value={counts.anjeong} color="#16a34a" />
+          <SummaryCard label="🔴 위험" value={counts.danger} unit="읍면동" color="#dc2626" />
+          <SummaryCard label="🟠 경계" value={counts.gyeonggye} unit="읍면동" color="#ea580c" />
+          <SummaryCard label="🟡 주의" value={counts.juui} unit="읍면동" color="#ca8a04" />
+          <SummaryCard label="🟢 안정" value={counts.anjeong} unit="읍면동" color="#16a34a" />
         </div>
 
         {/* 다운로드 */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-          <button
-            onClick={handleDownload}
+        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <a
+            href="/gsi_danger_pixels.xlsx"
+            download="gsi_danger_pixels.xlsx"
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: '6px',
-              background: '#16a34a', color: 'white', border: 'none',
-              padding: '10px 18px', borderRadius: '8px', fontSize: '14px',
-              fontWeight: '600', cursor: 'pointer',
+              display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
+              gap: '2px', background: '#16a34a', color: 'white',
+              padding: '10px 16px', borderRadius: '8px', textDecoration: 'none',
             }}
           >
-            📥 .xlsx 다운로드
-          </button>
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>📊 위험 픽셀 데이터 (.xlsx)</span>
+            <span style={{ fontSize: '11px', opacity: 0.85 }}>위험등급 384,034개 픽셀 좌표/GSI/변위속도 포함</span>
+          </a>
+          <a
+            href="/gsi_heatmap.png"
+            download="gsi_heatmap.png"
+            style={{
+              display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
+              gap: '2px', background: '#1e40af', color: 'white',
+              padding: '10px 16px', borderRadius: '8px', textDecoration: 'none',
+            }}
+          >
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>🗺️ GSI 히트맵 이미지 (.png)</span>
+            <span style={{ fontSize: '11px', opacity: 0.85 }}>픽셀 단위 위험도 시각화, GIS 소프트웨어 호환</span>
+          </a>
         </div>
 
         {/* 메인: 좌측 목록 + 우측 상세 */}
@@ -176,11 +190,14 @@ function Dashboard({ onNavigate }) {
   )
 }
 
-function SummaryCard({ label, value, color }) {
+function SummaryCard({ label, value, unit, color }) {
   return (
     <div style={{ background: 'white', borderRadius: '10px', padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
       <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>{label}</div>
-      <div style={{ fontSize: '26px', fontWeight: '800', color: color, letterSpacing: '-0.5px' }}>{value}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+        <span style={{ fontSize: '26px', fontWeight: '800', color: color, letterSpacing: '-0.5px' }}>{value}</span>
+        {unit && <span style={{ fontSize: '11px', color: '#9ca3af', fontWeight: '500' }}>{unit}</span>}
+      </div>
     </div>
   )
 }
