@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { getRiskLevel, generateTimeSeries, getSafetyIndex, getCivicExplanation } from './regions'
+import { getRiskLevel, generateTimeSeries, getSafetyIndex, getSafetyLevel, getCivicExplanation } from './regions'
 import { useIsMobile } from './useIsMobile'
 
 ChartJS.register(
@@ -166,7 +166,11 @@ function SidePanel({ region, onClose, isChatOpen }) {
     }
   }, [isMobile, region])
 
-  const safety = useMemo(() => getSafetyIndex(region?.velocity ?? 0), [region])
+  const safety = useMemo(() => {
+    const gsi = region?.gsi
+    if (gsi != null) return { score: parseFloat(gsi.toFixed(1)), level: getSafetyLevel(gsi) }
+    return getSafetyIndex(region?.velocity ?? 0)
+  }, [region])
   const civic = useMemo(() => getCivicExplanation(region?.velocity ?? 0), [region])
 
   const timeSeriesData = useMemo(() => {

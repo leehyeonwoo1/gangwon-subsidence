@@ -123,7 +123,7 @@ export function getSafetyIndex(velocity) {
   }
 }
 
-function getSafetyLevel(score) {
+export function getSafetyLevel(score) {
   if (score >= 8) {
     return {
       label: '매우 안전', shortLabel: '안전', color: '#16a34a', emoji: '🟢',
