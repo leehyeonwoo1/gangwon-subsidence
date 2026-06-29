@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { getSafetyIndex } from './regions'
+import { gangwonRegions, getSafetyIndex } from './regions'
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
 const SYSTEM_PROMPT = `당신은 강원도 지반안정 모니터링 서비스 강산지킴이의 AI 안내 도우미입니다.
 - 답변은 3문장 이내, 짧고 명확하게
 - 마크다운 형식 절대 금지 (**, *, ##, ---, ⚠️ 등)
-- GSI는 0~10점, 낮을수록 위험, 높을수록 안전
+- 안전 지수는 0~10점, 낮을수록 위험, 높을수록 안전
 - 현재 선택된 지역 데이터 기반으로 구체적으로 답변
 - 참고 자료임을 딱 한 번만 간단히 언급
 - 친근하고 쉬운 말로`
@@ -46,8 +46,30 @@ function ChatBot({ isOpen, onClose, onRegionSelect, selectedRegion }) {
     setInput('')
     setIsLoading(true)
 
+    // 지도 확대 + contextRegion 동기화
+    let contextRegion = selectedRegion
+    if (onRegionSelect) {
+      if (
+        userMessage.content.includes('가장 위험') ||
+        userMessage.content.includes('제일 위험') ||
+        userMessage.content.includes('가장 조심') ||
+        userMessage.content.includes('제일 조심')
+      ) {
+        const most = [...gangwonRegions].sort((a, b) => Math.abs(b.velocity) - Math.abs(a.velocity))[0]
+        onRegionSelect(most)
+        contextRegion = most
+      } else {
+        const mentioned = gangwonRegions.find((r) =>
+          userMessage.content.includes(r.name.replace('시', '').replace('군', ''))
+        )
+        if (mentioned) {
+          onRegionSelect(mentioned)
+          contextRegion = mentioned
+        }
+      }
+    }
+
     try {
-      // 첫 번째 user 메시지부터만 Gemini에 전달 (초기 assistant 환영 메시지 제외)
       const firstUserIdx = next.findIndex((m) => m.role === 'user')
       const contents = next.slice(firstUserIdx).map((m) => ({
         role: m.role === 'assistant' ? 'model' : 'user',
@@ -61,7 +83,7 @@ function ChatBot({ isOpen, onClose, onRegionSelect, selectedRegion }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             system_instruction: {
-              parts: [{ text: buildSystemWithContext(selectedRegion) }],
+              parts: [{ text: buildSystemWithContext(contextRegion) }],
             },
             contents,
           }),
@@ -144,7 +166,7 @@ function ChatBot({ isOpen, onClose, onRegionSelect, selectedRegion }) {
           >
             📍 {selectedRegion.name}
             <br />
-            GSI {selectedRegion.gsi ?? '-'}
+            안전지수 {getSafetyIndex(selectedRegion.velocity).score ?? '-'}
           </div>
         )}
         <button
