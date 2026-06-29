@@ -6,7 +6,6 @@ import DashboardChat from './DashboardChat'
 import { gangwonSubmunicipalities } from './submunicipalities'
 import koreaMunicipalities from './korea-municipalities.json'
 
-// 읍면동 code → 이름 / 시군 5자리 code → 이름 (요약 보고서용)
 const _codeToSubName = {}
 gangwonSubmunicipalities.features.forEach((ft) => {
   _codeToSubName[ft.properties.code] = ft.properties.name
@@ -17,7 +16,6 @@ koreaMunicipalities.features.forEach((ft) => {
   if (c.startsWith('32') && c.length === 5) _sigunCodeToName[c] = ft.properties.name
 })
 
-// 읍면동 순위 — extreme_gsi 오름차순 (낮을수록 위험 in current quantile system)
 const _rankedSubmunicipalities = Object.entries(realSubmunicipalityData)
   .map(([code, v]) => ({
     code,
@@ -28,31 +26,25 @@ const _rankedSubmunicipalities = Object.entries(realSubmunicipalityData)
   }))
   .sort((a, b) => a.extreme_gsi - b.extreme_gsi)
 
-// ── 모듈 레벨: 읍면동 분위수 기반 등급 시스템 ──────────────────
-// extreme_gsi(상위 10% 위험 픽셀 평균)를 기준으로 분위수 재계산
-// gsi → extreme_gsi ?? gsi 로 대체; 분위수 구조(5%/10%/25%/60%)는 유지
 const _sortedGSIs = Object.values(realSubmunicipalityData)
   .map((r) => r.extreme_gsi ?? r.gsi)
   .sort((a, b) => a - b)
-const _n   = _sortedGSIs.length              // 185
-const _I5  = Math.floor(_n * 0.05)          // 9
-const _I15 = Math.floor(_n * 0.15)          // 27
-const _I40 = Math.floor(_n * 0.40)          // 74
+const _n   = _sortedGSIs.length
+const _I5  = Math.floor(_n * 0.05)
+const _I15 = Math.floor(_n * 0.15)
+const _I40 = Math.floor(_n * 0.40)
 
-// 분위수 기반 카운트 (rank 기반)
 const QUANTILE_COUNTS = {
-  danger:    _I5,               // 9
-  gyeonggye: _I15 - _I5,       // 18
-  juui:      _I40 - _I15,      // 47
-  anjeong:   _n   - _I40,      // 111
+  danger:    _I5,
+  gyeonggye: _I15 - _I5,
+  juui:      _I40 - _I15,
+  anjeong:   _n   - _I40,
 }
 
-// rank 경계의 실제 extreme_gsi 임계값
-const _Q5  = _sortedGSIs[_I5]    // 6.33
-const _Q15 = _sortedGSIs[_I15]   // 6.78
-const _Q40 = _sortedGSIs[_I40]   // 7.89
+const _Q5  = _sortedGSIs[_I5]
+const _Q15 = _sortedGSIs[_I15]
+const _Q40 = _sortedGSIs[_I40]
 
-// 등급 + 권장조치 (요약 보고서용)
 function getGradeAction(extremeGsi) {
   if (extremeGsi < _Q5)  return { grade: '위험', action: '즉시 현장 정밀점검 필요' }
   if (extremeGsi < _Q15) return { grade: '경계', action: '우선 점검 대상 지정 권고' }
@@ -60,21 +52,19 @@ function getGradeAction(extremeGsi) {
   return                         { grade: '안정', action: '현상 유지' }
 }
 
-// 개별 항목 등급 함수
 function getQuantileGrade(gsi) {
   if (gsi < _Q5)  return { label: '위험', color: '#dc2626', emoji: '🔴' }
   if (gsi < _Q15) return { label: '경계', color: '#ea580c', emoji: '🟠' }
   if (gsi < _Q40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
   return            { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
-// ── 시군 18개 전용 rank 기반 등급 시스템 ────────────────────────
-// 시군 gsi 범위(1.9~6.1)가 읍면동 극값 임계값(_Q5=6.33)보다 낮아
-// getQuantileGrade를 그대로 쓰면 전원 위험 분류됨 → 별도 처리
-const _sortedSigungu = [...gangwonRegions].sort((a, b) => b.gsi - a.gsi)
-const _nSg   = _sortedSigungu.length                     // 18
-const _sgI5  = Math.max(1, Math.ceil(_nSg * 0.05))       // 1
-const _sgI15 = Math.ceil(_nSg * 0.15)                    // 3
-const _sgI40 = Math.ceil(_nSg * 0.40)                    // 8
+
+// ✅ 수정: gsi 오름차순 (낮은게 rank 0 = 위험)
+const _sortedSigungu = [...gangwonRegions].sort((a, b) => a.gsi - b.gsi)
+const _nSg   = _sortedSigungu.length
+const _sgI5  = Math.max(1, Math.ceil(_nSg * 0.05))
+const _sgI15 = Math.ceil(_nSg * 0.15)
+const _sgI40 = Math.ceil(_nSg * 0.40)
 const _sigunguRankMap = Object.fromEntries(
   _sortedSigungu.map((r, i) => [r.id, i])
 )
@@ -87,11 +77,10 @@ function getSigunguGrade(region) {
   if (rank < _sgI40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
   return               { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
-// ───────────────────────────────────────────────────────────────
 
 function Dashboard({ onNavigate }) {
-  // GSI 높은 순(위험한 순) 정렬
-  const ranked = [...gangwonRegions].sort((a, b) => b.gsi - a.gsi)
+  // ✅ 수정: GSI 낮은 순 (위험한 게 1위)
+  const ranked = [...gangwonRegions].sort((a, b) => a.gsi - b.gsi)
 
   const [selected, setSelected] = useState(ranked[0])
 
@@ -103,7 +92,6 @@ function Dashboard({ onNavigate }) {
     return '모니터링 유지'
   }
 
-  // 읍면동 요약 보고서 .xlsx (ExcelJS — 헤더 색상, 위험 행 강조)
   const handleReportDownload = async () => {
     const { default: ExcelJS } = await import('exceljs')
 
@@ -121,7 +109,7 @@ function Dashboard({ onNavigate }) {
           action,
         }
       })
-      .sort((a, b) => b.gsi - a.gsi)  // 높은 extreme_gsi 순 (위험한 순)
+      .sort((a, b) => a.gsi - b.gsi)
 
     const wb = new ExcelJS.Workbook()
     wb.creator = '강산지킴이'
@@ -138,7 +126,6 @@ function Dashboard({ onNavigate }) {
       { header: '권장조치',            key: 'action',   width: 28 },
     ]
 
-    // 헤더 스타일 — 진한 파란색 배경, 흰 글씨
     ws.getRow(1).height = 22
     ws.getRow(1).eachCell((cell) => {
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } }
@@ -147,7 +134,6 @@ function Dashboard({ onNavigate }) {
       cell.border = { bottom: { style: 'medium', color: { argb: 'FF1E40AF' } } }
     })
 
-    // 데이터 행 추가 + 위험 행 연한 빨강 배경
     sorted.forEach((item, i) => {
       const row = ws.addRow({ rank: i + 1, ...item })
       if (item.grade === '위험') {
@@ -171,7 +157,6 @@ function Dashboard({ onNavigate }) {
     URL.revokeObjectURL(url)
   }
 
-  // .xlsx 다운로드 (시군 우선순위 목록)
   const handleDownload = () => {
     const rows = ranked.map((r, i) => {
       const bd    = getGSIBreakdown(r)
@@ -205,7 +190,6 @@ function Dashboard({ onNavigate }) {
     XLSX.writeFile(wb, `강원도_점검우선순위_${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
 
-  // 읍면동 GeoJSON 클라이언트 생성 — realSubmunicipalityData + 읍면동 폴리곤
   const handleGeoJSONDownload = () => {
     const features = gangwonSubmunicipalities.features
       .filter((ft) => realSubmunicipalityData[ft.properties.code])
@@ -244,18 +228,8 @@ function Dashboard({ onNavigate }) {
   }
 
   return (
-    <div
-      style={{
-        width: '100%',
-        minHeight: '100vh',
-        paddingTop: '80px',
-        paddingBottom: '40px',
-        boxSizing: 'border-box',
-        background: '#f9fafb',
-      }}
-    >
+    <div style={{ width: '100%', minHeight: '100vh', paddingTop: '80px', paddingBottom: '40px', boxSizing: 'border-box', background: '#f9fafb' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px' }}>
-        {/* 헤더 */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ fontSize: '28px' }}>🏛️</span>
@@ -268,13 +242,12 @@ function Dashboard({ onNavigate }) {
           </span>
         </div>
         <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px' }}>
-          강원도 18개 시·군 · GSI 높은 순(위험) 정렬 · 위성 InSAR 광역 분석 기반
+          강원도 18개 시·군 · GSI 낮은 순(위험) 정렬 · 위성 InSAR 광역 분석 기반
         </p>
         <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 20px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 12px' }}>
           ⚠️ 읍면동 평균 GSI가 낮아도 내부에 위험 픽셀이 있을 수 있습니다. 상세 픽셀 데이터 다운로드로 정확한 점검 좌표를 확인하세요.
         </p>
 
-        {/* 요약 카드 — 읍면동 185개 rank 기반 분위수 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
           <SummaryCard label="🔴 위험" value={QUANTILE_COUNTS.danger}    sub={`하위 5% (n=${QUANTILE_COUNTS.danger})`}    color="#dc2626" />
           <SummaryCard label="🟠 경계" value={QUANTILE_COUNTS.gyeonggye} sub={`5~15% (n=${QUANTILE_COUNTS.gyeonggye})`}  color="#ea580c" />
@@ -282,44 +255,16 @@ function Dashboard({ onNavigate }) {
           <SummaryCard label="🟢 안정" value={QUANTILE_COUNTS.anjeong}   sub={`상위 60% (n=${QUANTILE_COUNTS.anjeong})`} color="#16a34a" />
         </div>
 
-        {/* 다운로드 */}
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginBottom: '12px', flexWrap: 'wrap' }}>
-          {/* 1. 요약 보고서 — 초록색 강조 */}
-          <button
-            onClick={handleReportDownload}
-            style={{
-              display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
-              gap: '2px', background: '#16a34a', color: 'white',
-              padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-            }}
-          >
+          <button onClick={handleReportDownload} style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px', background: '#16a34a', color: 'white', padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
             <span style={{ fontSize: '14px', fontWeight: '700' }}>📋 요약 보고서 다운로드</span>
             <span style={{ fontSize: '11px', opacity: 0.85 }}>읍면동 185개 · GSI 등급 · 권장조치 포함</span>
           </button>
-
-          {/* 2. 상세 픽셀 데이터 — 회색 보조 */}
-          <a
-            href="/gsi_danger_pixels.xlsx"
-            download="gsi_danger_pixels.xlsx"
-            style={{
-              display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
-              gap: '2px', background: '#6b7280', color: 'white',
-              padding: '10px 16px', borderRadius: '8px', textDecoration: 'none',
-            }}
-          >
+          <a href="/gsi_danger_pixels.xlsx" download="gsi_danger_pixels.xlsx" style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px', background: '#6b7280', color: 'white', padding: '10px 16px', borderRadius: '8px', textDecoration: 'none' }}>
             <span style={{ fontSize: '14px', fontWeight: '700' }}>📊 상세 픽셀 데이터 (전문가용)</span>
             <span style={{ fontSize: '11px', opacity: 0.85 }}>위험·경계 픽셀 38만행, 정확한 좌표 포함</span>
           </a>
-
-          {/* 3. 읍면동 GeoJSON */}
-          <button
-            onClick={handleGeoJSONDownload}
-            style={{
-              display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
-              gap: '2px', background: '#1e40af', color: 'white',
-              padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-            }}
-          >
+          <button onClick={handleGeoJSONDownload} style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px', background: '#1e40af', color: 'white', padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
             <span style={{ fontSize: '14px', fontWeight: '700' }}>🗺️ 읍면동 GeoJSON 다운로드</span>
             <span style={{ fontSize: '11px', opacity: 0.85 }}>읍면동 경계·GSI 등급, GIS 소프트웨어 호환</span>
           </button>
@@ -377,7 +322,6 @@ function Dashboard({ onNavigate }) {
 
         {/* 메인: 좌측 목록 + 우측 상세 */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '16px', alignItems: 'start' }}>
-          {/* 좌측: 시군 순위 목록 */}
           <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', fontWeight: '700', fontSize: '14px', color: '#374151' }}>
               위험 지점 순위 (클릭하면 상세 분석)
@@ -404,8 +348,7 @@ function Dashboard({ onNavigate }) {
                       {i + 1}
                     </span>
                     <span style={{ flex: 1, fontWeight: '600', color: '#111827' }}>{r.name}</span>
-                    <span style={{ fontSize: '11px', fontWeight: '600', color: grade.color,
-                      background: `${grade.color}15`, padding: '2px 6px', borderRadius: '4px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '600', color: grade.color, background: `${grade.color}15`, padding: '2px 6px', borderRadius: '4px' }}>
                       {grade.emoji} {grade.label}
                     </span>
                     <span style={{ fontWeight: '700', color: grade.color, minWidth: '36px', textAlign: 'right' }}>
@@ -416,29 +359,18 @@ function Dashboard({ onNavigate }) {
               })}
             </div>
           </div>
-
-          {/* 우측: 상세 패널 */}
           <DetailPanel region={selected} actionOf={actionOf} />
         </div>
 
-        {/* 하단 안내 + 돌아가기 */}
         <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '16px', lineHeight: '1.6' }}>
           ※ 본 우선순위는 위성 InSAR 광역 침하 분석 기반의 스크리닝 결과이며, 정밀 조사 대상 선정을 위한 참고 자료입니다.
           실제 정밀 진단은 GPR 등 현장 조사를 통해 수행됩니다.
         </p>
-        <button
-          onClick={() => onNavigate('landing')}
-          style={{
-            marginTop: '16px', background: 'none', color: '#6b7280',
-            border: '1px solid #e5e7eb', padding: '10px 20px', borderRadius: '8px',
-            fontSize: '14px', fontWeight: '600', cursor: 'pointer',
-          }}
-        >
+        <button onClick={() => onNavigate('landing')} style={{ marginTop: '16px', background: 'none', color: '#6b7280', border: '1px solid #e5e7eb', padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>
           ← 처음으로
         </button>
       </div>
 
-      {/* AI 챗봇 — 선택된 시군 컨텍스트 자동 포함 */}
       {(() => {
         const bd    = getGSIBreakdown(selected)
         const grade = getSigunguGrade(selected)
@@ -477,28 +409,13 @@ function DetailPanel({ region, actionOf }) {
   const velColor = bd.raw.velocity < 0 ? '#dc2626' : bd.raw.velocity > 0 ? '#2563eb' : '#16a34a'
 
   const dataRows = [
-    {
-      label: '연간 변위 속도',
-      value: `${bd.raw.velocity} mm/yr`,
-      tag: velDir,
-      tagColor: velColor,
-    },
-    {
-      label: '인프라 근접도',
-      value: `${Math.round(bd.raw.infra * 100)}%`,
-      tag: null,
-    },
-    {
-      label: '데이터 신뢰도',
-      value: '측정 중',
-      tag: 'Phase 2 예정',
-      tagColor: '#9ca3af',
-    },
+    { label: '연간 변위 속도', value: `${bd.raw.velocity} mm/yr`, tag: velDir, tagColor: velColor },
+    { label: '인프라 근접도', value: `${Math.round(bd.raw.infra * 100)}%`, tag: null },
+    { label: '데이터 신뢰도', value: '측정 중', tag: 'Phase 2 예정', tagColor: '#9ca3af' },
   ]
 
   return (
     <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', padding: '20px', position: 'sticky', top: '80px' }}>
-      {/* 헤더 */}
       <div style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '4px' }}>
         {grade.emoji} {region.name}
       </div>
@@ -507,28 +424,15 @@ function DetailPanel({ region, actionOf }) {
         <span style={{ margin: '0 6px', color: '#d1d5db' }}>|</span>
         등급 <strong style={{ color: grade.color }}>{grade.emoji} {grade.label}</strong>
       </div>
-
-      {/* 실측 데이터 */}
       <div style={{ background: '#f9fafb', borderRadius: '10px', padding: '14px', marginBottom: '14px' }}>
-        <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151', marginBottom: '10px' }}>
-          📊 실측 데이터
-        </div>
+        <div style={{ fontSize: '12px', fontWeight: '700', color: '#374151', marginBottom: '10px' }}>📊 실측 데이터</div>
         {dataRows.map(({ label, value, tag, tagColor }) => (
-          <div
-            key={label}
-            style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '8px 0', borderBottom: '1px solid #f3f4f6',
-            }}
-          >
+          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
             <span style={{ fontSize: '13px', color: '#6b7280' }}>{label}</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '13px', fontWeight: '600', color: '#111827' }}>{value}</span>
               {tag && (
-                <span style={{
-                  fontSize: '11px', fontWeight: '600', color: tagColor,
-                  background: `${tagColor}18`, padding: '2px 7px', borderRadius: '4px',
-                }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: tagColor, background: `${tagColor}18`, padding: '2px 7px', borderRadius: '4px' }}>
                   {tag}
                 </span>
               )}
@@ -536,11 +440,9 @@ function DetailPanel({ region, actionOf }) {
           </div>
         ))}
         <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '10px' }}>
-          GSI: 극값(상위 10% 위험 픽셀 평균) 기준, 높을수록 위험
+          GSI: 낮을수록 위험 (0 = 매우 위험, 10 = 매우 안전)
         </div>
       </div>
-
-      {/* 권장 조치 */}
       <div style={{ background: `${grade.color}11`, border: `1px solid ${grade.color}33`, borderRadius: '10px', padding: '12px 14px' }}>
         <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px' }}>권장 조치</div>
         <div style={{ fontSize: '15px', fontWeight: '700', color: grade.color }}>{actionOf(region)}</div>
