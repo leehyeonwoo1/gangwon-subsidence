@@ -17,56 +17,57 @@ koreaMunicipalities.features.forEach((ft) => {
   if (c.startsWith('32') && c.length === 5) _sigunCodeToName[c] = ft.properties.name
 })
 
-// ── 모듈 레벨: 읍면동 분위수 기반 등급 시스템 ──────────────────
-// 185개 읍면동 GSI를 정렬 후 rank 기반으로 5% / 15% / 40% 경계 계산
-const _sortedGSIs = Object.values(realSubmunicipalityData)
-  .map((r) => r.gsi)
-  .sort((a, b) => a - b)
-const _n  = _sortedGSIs.length               // 185
-const _I5  = Math.floor(_n * 0.05)           // 9
-const _I15 = Math.floor(_n * 0.15)           // 27
-const _I40 = Math.floor(_n * 0.40)           // 74
+// ── 모듈 레벨: extreme_gsi 기반 등급 시스템 ──────────────────────
+// 스케일: 0~10, 높을수록 위험 (calculate_gsi_v07.py 기준)
+// extreme_gsi = 읍면동 내 상위 10% 위험 픽셀 평균; 없으면 gsi로 fallback
+const GSI_T3 = 7.216  // 위험 하한
+const GSI_T2 = 4.842  // 경계 하한
+const GSI_T1 = 2.524  // 주의 하한
 
-// 분위수 기반 카운트 (rank 기반 → 타이 문제 없이 정확)
-const QUANTILE_COUNTS = {
-  danger:   _I5,                // 9
-  gyeonggye: _I15 - _I5,       // 18
-  juui:     _I40 - _I15,       // 47
-  anjeong:  _n   - _I40,       // 111
+// 읍면동 실제 등급 분포 (extreme_gsi ?? gsi, 절대 임계값 기준)
+const _gsiScores = Object.values(realSubmunicipalityData).map((v) => v.extreme_gsi ?? v.gsi)
+const GRADE_COUNTS = {
+  danger:    _gsiScores.filter((g) => g >= GSI_T3).length,
+  gyeonggye: _gsiScores.filter((g) => g >= GSI_T2 && g < GSI_T3).length,
+  juui:      _gsiScores.filter((g) => g >= GSI_T1 && g < GSI_T2).length,
+  anjeong:   _gsiScores.filter((g) => g < GSI_T1).length,
 }
 
-// rank 경계의 실제 GSI 임계값
-const _Q5  = _sortedGSIs[_I5]   // 1.60
-const _Q15 = _sortedGSIs[_I15]  // 2.10
-const _Q40 = _sortedGSIs[_I40]  // 3.30
-
-// 등급 + 권장조치 (요약 보고서용)
-function getGradeAction(gsi) {
-  if (gsi < _Q5)  return { grade: '위험', action: '즉시 현장 정밀점검 필요' }
-  if (gsi < _Q15) return { grade: '경계', action: '우선 점검 대상 지정 권고' }
-  if (gsi < _Q40) return { grade: '주의', action: '정기 모니터링 유지' }
-  return            { grade: '안정', action: '현상 유지' }
+// 공통 등급 함수 — 시군 gsi / 읍면동 extreme_gsi 모두 동일 스케일
+function getGradeByScore(gsi) {
+  if (gsi >= GSI_T3) return { label: '위험', color: '#dc2626', emoji: '🔴' }
+  if (gsi >= GSI_T2) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  if (gsi >= GSI_T1) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
+  return               { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
 
-// 개별 항목 등급 함수 (getRFGrade 대체)
-function getQuantileGrade(gsi) {
-  if (gsi < _Q5)  return { label: '위험', color: '#dc2626', emoji: '🔴' }
-  if (gsi < _Q15) return { label: '경계', color: '#ea580c', emoji: '🟠' }
-  if (gsi < _Q40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
-  return            { label: '안정', color: '#16a34a', emoji: '🟢' }
+// 등급 + 권장조치 (요약 보고서용) — code 기반으로 extreme_gsi 우선 사용
+function getGradeAction(code, v) {
+  const score = v.extreme_gsi ?? v.gsi
+  const { label } = getGradeByScore(score)
+  const actions = {
+    '위험': '즉시 현장 정밀점검 필요',
+    '경계': '우선 점검 대상 지정 권고',
+    '주의': '정기 모니터링 유지',
+    '안정': '현상 유지',
+  }
+  return { grade: label, action: actions[label] }
 }
-// ───────────────────────────────────────────────────────────────
+
+// 하위 호환 — 시군 등급 표시에 사용 (기존 호출부 유지)
+const getQuantileGrade = getGradeByScore
+// ────────────────────────────────────────────────────────────────
 
 function Dashboard({ onNavigate }) {
-  // GSI 낮은 순(위험한 순) 정렬
-  const ranked = [...gangwonRegions].sort((a, b) => getGSIBreakdown(a).gsi - getGSIBreakdown(b).gsi)
+  // GSI 높은 순(위험한 순) 정렬 — extreme_gsi ?? gsi 기준, 높을수록 위험
+  const ranked = [...gangwonRegions].sort((a, b) => getGSIBreakdown(b).gsi - getGSIBreakdown(a).gsi)
 
   const [selected, setSelected] = useState(ranked[0])
 
   const actionOf = (gsi) => {
-    if (gsi < _Q5)  return '긴급 정밀진단'
-    if (gsi < _Q15) return '정밀진단 권장'
-    if (gsi < _Q40) return '정기 점검'
+    if (gsi >= GSI_T3) return '긴급 정밀진단'
+    if (gsi >= GSI_T2) return '정밀진단 권장'
+    if (gsi >= GSI_T1) return '정기 점검'
     return '모니터링 유지'
   }
 
@@ -76,18 +77,19 @@ function Dashboard({ onNavigate }) {
 
     const sorted = Object.entries(realSubmunicipalityData)
       .map(([code, v]) => {
-        const { grade, action } = getGradeAction(v.gsi)
+        const { grade, action } = getGradeAction(code, v)
+        const score = v.extreme_gsi ?? v.gsi
         return {
           name:     _codeToSubName[code] ?? code,
           sigun:    _sigunCodeToName[code.slice(0, 5)] ?? '?',
-          gsi:      v.gsi,
+          gsi:      parseFloat(score.toFixed(2)),
           grade,
           velocity: v.velocity,
           infra:    Math.round(v.infra * 100),
           action,
         }
       })
-      .sort((a, b) => a.gsi - b.gsi)
+      .sort((a, b) => b.gsi - a.gsi)  // 높은 extreme_gsi 순 (위험한 순)
 
     const wb = new ExcelJS.Workbook()
     wb.creator = '강산지킴이'
@@ -196,18 +198,18 @@ function Dashboard({ onNavigate }) {
           </span>
         </div>
         <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px' }}>
-          강원도 18개 시·군 · GSI 낮은 순(위험) 정렬 · 위성 InSAR 광역 분석 기반
+          강원도 18개 시·군 · GSI 높은 순(위험) 정렬 · 위성 InSAR 광역 분석 기반
         </p>
         <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 20px' }}>
-          등급 기준: 읍면동 185개 분위수 — 위험 하위 5% / 경계 5~15% / 주의 15~40% / 안정 40%+
+          읍면동 등급: 극값GSI(상위 10% 위험 픽셀 평균) — 위험 ≥7.2 / 경계 ≥4.8 / 주의 ≥2.5 / 안정
         </p>
 
         {/* 요약 카드 — 읍면동 185개 rank 기반 분위수 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-          <SummaryCard label="🔴 위험" value={QUANTILE_COUNTS.danger}   sub={`GSI < ${_Q5}`}  color="#dc2626" />
-          <SummaryCard label="🟠 경계" value={QUANTILE_COUNTS.gyeonggye} sub={`${_Q5}~${_Q15}`} color="#ea580c" />
-          <SummaryCard label="🟡 주의" value={QUANTILE_COUNTS.juui}      sub={`${_Q15}~${_Q40}`} color="#ca8a04" />
-          <SummaryCard label="🟢 안정" value={QUANTILE_COUNTS.anjeong}   sub={`GSI ≥ ${_Q40}`} color="#16a34a" />
+          <SummaryCard label="🔴 위험" value={GRADE_COUNTS.danger}    sub={`극값GSI ≥ ${GSI_T3}`}        color="#dc2626" />
+          <SummaryCard label="🟠 경계" value={GRADE_COUNTS.gyeonggye} sub={`${GSI_T2}~${GSI_T3}`}        color="#ea580c" />
+          <SummaryCard label="🟡 주의" value={GRADE_COUNTS.juui}      sub={`${GSI_T1}~${GSI_T2}`}        color="#ca8a04" />
+          <SummaryCard label="🟢 안정" value={GRADE_COUNTS.anjeong}   sub={`극값GSI < ${GSI_T1}`}        color="#16a34a" />
         </div>
 
         {/* 다운로드 */}
@@ -384,7 +386,7 @@ function DetailPanel({ region, actionOf }) {
       <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
         GSI <strong style={{ color: grade.color, fontSize: '16px' }}>{bd.gsi}</strong> / 10
         <span style={{ margin: '0 6px', color: '#d1d5db' }}>|</span>
-        분위수 등급 <strong style={{ color: grade.color }}>{grade.emoji} {grade.label}</strong>
+        등급 <strong style={{ color: grade.color }}>{grade.emoji} {grade.label}</strong>
       </div>
 
       {/* 실측 데이터 */}
@@ -415,7 +417,7 @@ function DetailPanel({ region, actionOf }) {
           </div>
         ))}
         <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '10px' }}>
-          GSI 산정: 강원도 250만 픽셀 분위수 기반
+          GSI: 극값(상위 10% 위험 픽셀 평균) 기준, 높을수록 위험
         </div>
       </div>
 

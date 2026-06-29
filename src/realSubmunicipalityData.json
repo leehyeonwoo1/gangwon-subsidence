@@ -4,1294 +4,1479 @@
     "gsi": 5.9,
     "infra": 0.51,
     "pixelCount": 15858,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3241034": {
     "velocity": 65.8,
     "gsi": 5.5,
     "infra": 0.51,
     "pixelCount": 18667,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3241033": {
     "velocity": 41.9,
     "gsi": 3.5,
     "infra": 0.33,
     "pixelCount": 46087,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3241032": {
     "velocity": 88.4,
     "gsi": 7.8,
     "infra": 0.79,
     "pixelCount": 12538,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3241031": {
     "velocity": 35.3,
     "gsi": 3.2,
     "infra": 0.3,
     "pixelCount": 72389,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3241011": {
     "velocity": 96.3,
     "gsi": 8.1,
     "infra": 0.77,
     "pixelCount": 7988,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3240033": {
     "velocity": 86.1,
     "gsi": 6.5,
     "infra": 0.52,
     "pixelCount": 36774,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3240032": {
     "velocity": 90.7,
     "gsi": 6.9,
     "infra": 0.58,
     "pixelCount": 16357,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3240031": {
     "velocity": 66.6,
     "gsi": 4.7,
     "infra": 0.29,
     "pixelCount": 36012,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3240012": {
     "velocity": 69.2,
     "gsi": 5.3,
     "infra": 0.4,
     "pixelCount": 32258,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3240011": {
     "velocity": 33.6,
     "gsi": 3.0,
     "infra": 0.25,
     "pixelCount": 67388,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3239035": {
     "velocity": -19.6,
     "gsi": 1.9,
     "infra": 0.34,
     "pixelCount": 48215,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.690000057220459
   },
   "3239034": {
     "velocity": -9.8,
     "gsi": 1.6,
     "infra": 0.16,
     "pixelCount": 63390,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.730000019073486
   },
   "3239033": {
     "velocity": 3.4,
     "gsi": 1.6,
     "infra": 0.3,
     "pixelCount": 69379,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.880000114440918
   },
   "3239032": {
     "velocity": -9.1,
     "gsi": 2.5,
     "infra": 0.23,
     "pixelCount": 87941,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.71999979019165
   },
   "3239031": {
     "velocity": -44.4,
     "gsi": 3.3,
     "infra": 0.38,
     "pixelCount": 60011,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.729999542236328
   },
   "3239011": {
     "velocity": -26.9,
     "gsi": 2.6,
     "infra": 0.35,
     "pixelCount": 78496,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.100000381469727
   },
   "3238034": {
     "velocity": -3.3,
     "gsi": 0.9,
     "infra": 0.36,
     "pixelCount": 16322,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 4.510000228881836
   },
   "3238033": {
     "velocity": -29.1,
     "gsi": 2.4,
     "infra": 0.17,
     "pixelCount": 57575,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.519999980926514
   },
   "3238032": {
     "velocity": 13.0,
     "gsi": 3.1,
     "infra": 0.41,
     "pixelCount": 28416,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3238031": {
     "velocity": 5.6,
     "gsi": 4.4,
     "infra": 0.43,
     "pixelCount": 30792,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3238011": {
     "velocity": 18.7,
     "gsi": 3.3,
     "infra": 0.38,
     "pixelCount": 43028,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3237034": {
     "velocity": -1.5,
     "gsi": 2.1,
     "infra": 0.44,
     "pixelCount": 35495,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.599999904632568
   },
   "3237033": {
     "velocity": -6.2,
     "gsi": 1.8,
     "infra": 0.29,
     "pixelCount": 68045,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.900000095367432
   },
   "3237032": {
     "velocity": 6.8,
     "gsi": 2.2,
     "infra": 0.41,
     "pixelCount": 28175,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.449999809265137
   },
   "3237031": {
     "velocity": -7.9,
     "gsi": 2.0,
     "infra": 0.35,
     "pixelCount": 30398,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.360000133514404
   },
   "3237011": {
     "velocity": -14.9,
     "gsi": 1.7,
     "infra": 0.26,
     "pixelCount": 88221,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.559999942779541
   },
   "3236032": {
     "velocity": 13.8,
     "gsi": 2.2,
     "infra": 0.34,
     "pixelCount": 34860,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.979999542236328
   },
   "3236031": {
     "velocity": 22.4,
     "gsi": 2.8,
     "infra": 0.47,
     "pixelCount": 15432,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.130000114440918
   },
   "3236021": {
     "velocity": 19.4,
     "gsi": 1.4,
     "infra": 0.04,
     "pixelCount": 448,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.630000114440918
   },
   "3236014": {
     "velocity": 45.0,
     "gsi": 4.7,
     "infra": 0.63,
     "pixelCount": 26097,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.09000015258789
   },
   "3236013": {
     "velocity": 36.6,
     "gsi": 3.7,
     "infra": 0.51,
     "pixelCount": 39055,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.350000381469727
   },
   "3236012": {
     "velocity": 41.5,
     "gsi": 3.9,
     "infra": 0.41,
     "pixelCount": 23323,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.899999618530273
   },
   "3236011": {
     "velocity": 27.7,
     "gsi": 2.8,
     "infra": 0.31,
     "pixelCount": 24465,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.59000015258789
   },
   "3235037": {
     "velocity": 8.9,
     "gsi": 2.2,
     "infra": 0.39,
     "pixelCount": 36103,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.8100004196167
   },
   "3235036": {
     "velocity": 38.0,
     "gsi": 3.3,
     "infra": 0.44,
     "pixelCount": 34200,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.770000457763672
   },
   "3235035": {
     "velocity": -0.7,
     "gsi": 1.9,
     "infra": 0.36,
     "pixelCount": 63918,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.460000038146973
   },
   "3235034": {
     "velocity": -12.7,
     "gsi": 2.9,
     "infra": 0.31,
     "pixelCount": 35463,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.25
   },
   "3235032": {
     "velocity": 15.4,
     "gsi": 2.3,
     "infra": 0.43,
     "pixelCount": 35165,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.28000020980835
   },
   "3235014": {
     "velocity": 22.7,
     "gsi": 3.2,
     "infra": 0.39,
     "pixelCount": 28675,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.0
   },
   "3235013": {
     "velocity": 38.9,
     "gsi": 3.3,
     "infra": 0.5,
     "pixelCount": 11970,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.640000343322754
   },
   "3235012": {
     "velocity": 41.7,
     "gsi": 3.5,
     "infra": 0.52,
     "pixelCount": 13157,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.889999866485596
   },
   "3235011": {
     "velocity": -7.8,
     "gsi": 2.3,
     "infra": 0.39,
     "pixelCount": 54299,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.440000057220459
   },
   "3234037": {
     "velocity": -7.8,
     "gsi": 1.4,
     "infra": 0.48,
     "pixelCount": 57777,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.380000114440918
   },
   "3234036": {
     "velocity": -23.6,
     "gsi": 2.1,
     "infra": 0.34,
     "pixelCount": 87602,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.550000190734863
   },
   "3234035": {
     "velocity": -10.8,
     "gsi": 2.2,
     "infra": 0.47,
     "pixelCount": 33640,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.570000171661377
   },
   "3234034": {
     "velocity": -12.3,
     "gsi": 1.6,
     "infra": 0.34,
     "pixelCount": 55936,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.159999847412109
   },
   "3234033": {
     "velocity": -8.5,
     "gsi": 2.6,
     "infra": 0.39,
     "pixelCount": 41538,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.480000019073486
   },
   "3234032": {
     "velocity": 5.8,
     "gsi": 2.1,
     "infra": 0.43,
     "pixelCount": 30294,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.849999904632568
   },
   "3234031": {
     "velocity": -29.4,
     "gsi": 2.3,
     "infra": 0.39,
     "pixelCount": 28568,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.860000133514404
   },
   "3234011": {
     "velocity": -13.4,
     "gsi": 2.1,
     "infra": 0.56,
     "pixelCount": 39298,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.829999923706055
   },
   "3233039": {
     "velocity": 21.2,
     "gsi": 2.9,
     "infra": 0.68,
     "pixelCount": 17557,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.829999923706055
   },
   "3233038": {
     "velocity": 2.4,
     "gsi": 1.6,
     "infra": 0.37,
     "pixelCount": 26716,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 5.630000114440918
   },
   "3233037": {
     "velocity": -5.5,
     "gsi": 1.7,
     "infra": 0.34,
     "pixelCount": 35704,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.730000019073486
   },
   "3233036": {
     "velocity": 10.9,
     "gsi": 3.1,
     "infra": 0.58,
     "pixelCount": 25867,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.809999942779541
   },
   "3233034": {
     "velocity": 0.4,
     "gsi": 2.3,
     "infra": 0.54,
     "pixelCount": 20816,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.420000076293945
   },
   "3233033": {
     "velocity": -21.6,
     "gsi": 2.3,
     "infra": 0.49,
     "pixelCount": 27128,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.820000171661377
   },
   "3233031": {
     "velocity": 39.9,
     "gsi": 3.0,
     "infra": 0.3,
     "pixelCount": 30826,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.390000343322754
   },
   "3233012": {
     "velocity": 47.6,
     "gsi": 3.8,
     "infra": 0.42,
     "pixelCount": 18360,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.09000015258789
   },
   "3233011": {
     "velocity": -9.2,
     "gsi": 1.8,
     "infra": 0.45,
     "pixelCount": 42338,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.760000228881836
   },
   "3232038": {
     "velocity": -11.5,
     "gsi": 1.8,
     "infra": 0.31,
     "pixelCount": 24167,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.989999771118164
   },
   "3232037": {
     "velocity": -12.1,
     "gsi": 1.6,
     "infra": 0.46,
     "pixelCount": 29616,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.809999942779541
   },
   "3232036": {
     "velocity": 19.5,
     "gsi": 3.2,
     "infra": 0.45,
     "pixelCount": 32030,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.289999961853027
   },
   "3232035": {
     "velocity": -4.1,
     "gsi": 1.6,
     "infra": 0.39,
     "pixelCount": 31139,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.519999980926514
   },
   "3232034": {
     "velocity": 0.3,
     "gsi": 2.0,
     "infra": 0.49,
     "pixelCount": 30345,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.159999847412109
   },
   "3232033": {
     "velocity": 21.9,
     "gsi": 2.7,
     "infra": 0.66,
     "pixelCount": 29536,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.849999904632568
   },
   "3232032": {
     "velocity": 2.6,
     "gsi": 1.6,
     "infra": 0.45,
     "pixelCount": 22757,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 5.28000020980835
   },
   "3232031": {
     "velocity": 30.9,
     "gsi": 3.7,
     "infra": 0.62,
     "pixelCount": 21669,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.359999656677246
   },
   "3232011": {
     "velocity": 54.4,
     "gsi": 5.6,
     "infra": 0.74,
     "pixelCount": 16421,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.619999885559082
   },
   "3231039": {
     "velocity": -27.1,
     "gsi": 2.3,
     "infra": 0.29,
     "pixelCount": 112537,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.180000305175781
   },
   "3231038": {
     "velocity": 15.2,
     "gsi": 2.7,
     "infra": 0.47,
     "pixelCount": 33937,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.420000076293945
   },
   "3231037": {
     "velocity": 30.5,
     "gsi": 3.5,
     "infra": 0.6,
     "pixelCount": 30236,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.579999923706055
   },
   "3231036": {
     "velocity": 24.5,
     "gsi": 3.0,
     "infra": 0.48,
     "pixelCount": 26367,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.730000019073486
   },
   "3231035": {
     "velocity": -7.5,
     "gsi": 2.7,
     "infra": 0.42,
     "pixelCount": 35443,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.320000171661377
   },
   "3231034": {
     "velocity": -23.2,
     "gsi": 1.9,
     "infra": 0.38,
     "pixelCount": 54352,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.849999904632568
   },
   "3231033": {
     "velocity": -17.1,
     "gsi": 1.7,
     "infra": 0.5,
     "pixelCount": 35424,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.329999923706055
   },
   "3231032": {
     "velocity": -27.8,
     "gsi": 2.9,
     "infra": 0.36,
     "pixelCount": 34032,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.760000228881836
   },
   "3231031": {
     "velocity": 0.2,
     "gsi": 2.3,
     "infra": 0.44,
     "pixelCount": 48902,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.889999866485596
   },
   "3231011": {
     "velocity": 28.1,
     "gsi": 3.5,
     "infra": 0.58,
     "pixelCount": 25328,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.470000267028809
   },
   "3207054": {
     "velocity": 84.6,
     "gsi": 9.2,
     "infra": 0.97,
     "pixelCount": 487,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.770000457763672
   },
   "3207053": {
     "velocity": 81.9,
     "gsi": 8.9,
     "infra": 0.96,
     "pixelCount": 2284,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.9399995803833
   },
   "3207052": {
     "velocity": 63.1,
     "gsi": 6.3,
     "infra": 0.69,
     "pixelCount": 5677,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.75
   },
   "3207051": {
     "velocity": 56.0,
     "gsi": 5.8,
     "infra": 0.72,
     "pixelCount": 5532,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.789999961853027
   },
   "3207036": {
     "velocity": 15.4,
     "gsi": 2.5,
     "infra": 0.43,
     "pixelCount": 16745,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.529999732971191
   },
   "3207035": {
     "velocity": 39.4,
     "gsi": 3.2,
     "infra": 0.4,
     "pixelCount": 5363,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.930000305175781
   },
   "3207034": {
     "velocity": 26.2,
     "gsi": 3.2,
     "infra": 0.49,
     "pixelCount": 28762,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.34000015258789
   },
   "3207033": {
     "velocity": -7.8,
     "gsi": 1.7,
     "infra": 0.37,
     "pixelCount": 37617,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.21999979019165
   },
   "3207032": {
     "velocity": 12.9,
     "gsi": 2.3,
     "infra": 0.32,
     "pixelCount": 53018,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.859999656677246
   },
   "3207031": {
     "velocity": 28.2,
     "gsi": 3.3,
     "infra": 0.5,
     "pixelCount": 40491,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.399999618530273
   },
   "3207012": {
     "velocity": 14.4,
     "gsi": 2.2,
     "infra": 0.37,
     "pixelCount": 29849,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.559999942779541
   },
   "3207011": {
     "velocity": 43.7,
     "gsi": 3.8,
     "infra": 0.42,
     "pixelCount": 45477,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.989999771118164
   },
   "3206060": {
     "velocity": 66.1,
     "gsi": 4.8,
     "infra": 0.32,
     "pixelCount": 19734,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3206059": {
     "velocity": 113.3,
     "gsi": 9.9,
     "infra": 0.98,
     "pixelCount": 664,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3206058": {
     "velocity": 110.4,
     "gsi": 9.5,
     "infra": 0.92,
     "pixelCount": 803,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3206057": {
     "velocity": 102.3,
     "gsi": 8.3,
     "infra": 0.73,
     "pixelCount": 6057,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3206056": {
     "velocity": 113.3,
     "gsi": 9.5,
     "infra": 0.9,
     "pixelCount": 132,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3206054": {
     "velocity": 114.7,
     "gsi": 10.0,
     "infra": 0.99,
     "pixelCount": 352,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3206052": {
     "velocity": 114.7,
     "gsi": 9.9,
     "infra": 0.98,
     "pixelCount": 147,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3206051": {
     "velocity": 113.5,
     "gsi": 9.6,
     "infra": 0.92,
     "pixelCount": 1968,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3205062": {
     "velocity": 45.6,
     "gsi": 4.0,
     "infra": 0.64,
     "pixelCount": 3419,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.319999694824219
   },
   "3205054": {
     "velocity": 83.6,
     "gsi": 7.0,
     "infra": 0.71,
     "pixelCount": 5161,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3205053": {
     "velocity": 39.5,
     "gsi": 3.3,
     "infra": 0.42,
     "pixelCount": 32806,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3205052": {
     "velocity": 74.3,
     "gsi": 6.1,
     "infra": 0.59,
     "pixelCount": 7938,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3205051": {
     "velocity": 113.3,
     "gsi": 9.8,
     "infra": 0.96,
     "pixelCount": 251,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3204065": {
     "velocity": 17.9,
     "gsi": 2.6,
     "infra": 0.22,
     "pixelCount": 26611,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.720000267028809
   },
   "3204063": {
     "velocity": 75.7,
     "gsi": 7.0,
     "infra": 0.65,
     "pixelCount": 8131,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3204060": {
     "velocity": 68.0,
     "gsi": 7.3,
     "infra": 0.81,
     "pixelCount": 5333,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.9399995803833
   },
   "3204059": {
     "velocity": 88.1,
     "gsi": 9.1,
     "infra": 0.9,
     "pixelCount": 152,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3204057": {
     "velocity": 92.0,
     "gsi": 9.8,
     "infra": 0.97,
     "pixelCount": 357,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3204055": {
     "velocity": 85.3,
     "gsi": 9.1,
     "infra": 0.94,
     "pixelCount": 430,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3204054": {
     "velocity": 47.1,
     "gsi": 4.8,
     "infra": 0.59,
     "pixelCount": 1330,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3204053": {
     "velocity": 69.6,
     "gsi": 7.0,
     "infra": 0.68,
     "pixelCount": 4845,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.869999885559082
   },
   "3204052": {
     "velocity": 85.1,
     "gsi": 8.9,
     "infra": 0.91,
     "pixelCount": 1337,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.960000038146973
   },
   "3204051": {
     "velocity": 71.7,
     "gsi": 7.4,
     "infra": 0.71,
     "pixelCount": 3020,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203067": {
     "velocity": 115.0,
     "gsi": 9.5,
     "infra": 0.92,
     "pixelCount": 6254,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203065": {
     "velocity": 117.7,
     "gsi": 9.8,
     "infra": 0.95,
     "pixelCount": 2680,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203062": {
     "velocity": 114.5,
     "gsi": 9.7,
     "infra": 0.95,
     "pixelCount": 4487,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203061": {
     "velocity": 116.5,
     "gsi": 9.9,
     "infra": 0.98,
     "pixelCount": 1263,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203060": {
     "velocity": 117.8,
     "gsi": 9.8,
     "infra": 0.97,
     "pixelCount": 982,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203059": {
     "velocity": 112.7,
     "gsi": 9.8,
     "infra": 0.98,
     "pixelCount": 422,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203058": {
     "velocity": 119.6,
     "gsi": 9.9,
     "infra": 0.98,
     "pixelCount": 842,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203057": {
     "velocity": 119.1,
     "gsi": 10.0,
     "infra": 1.0,
     "pixelCount": 392,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203056": {
     "velocity": 119.5,
     "gsi": 10.0,
     "infra": 1.0,
     "pixelCount": 665,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203055": {
     "velocity": 119.0,
     "gsi": 10.0,
     "infra": 1.0,
     "pixelCount": 571,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203054": {
     "velocity": 119.8,
     "gsi": 10.0,
     "infra": 1.0,
     "pixelCount": 146,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203052": {
     "velocity": 118.9,
     "gsi": 10.0,
     "infra": 1.0,
     "pixelCount": 266,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203051": {
     "velocity": 117.9,
     "gsi": 10.0,
     "infra": 0.99,
     "pixelCount": 906,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203037": {
     "velocity": 36.6,
     "gsi": 3.2,
     "infra": 0.3,
     "pixelCount": 57090,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203036": {
     "velocity": 80.1,
     "gsi": 6.4,
     "infra": 0.6,
     "pixelCount": 20360,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203035": {
     "velocity": 45.5,
     "gsi": 3.9,
     "infra": 0.37,
     "pixelCount": 43580,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203034": {
     "velocity": 58.2,
     "gsi": 5.1,
     "infra": 0.55,
     "pixelCount": 32849,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203033": {
     "velocity": 73.8,
     "gsi": 6.3,
     "infra": 0.64,
     "pixelCount": 10176,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203032": {
     "velocity": 3.5,
     "gsi": 1.5,
     "infra": 0.44,
     "pixelCount": 66252,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.0
   },
   "3203031": {
     "velocity": 63.5,
     "gsi": 5.6,
     "infra": 0.63,
     "pixelCount": 24040,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3203011": {
     "velocity": 68.2,
     "gsi": 5.6,
     "infra": 0.54,
     "pixelCount": 16368,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 10.0
   },
   "3202068": {
     "velocity": 23.9,
     "gsi": 4.4,
     "infra": 0.73,
     "pixelCount": 4152,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.53000020980835
   },
   "3202067": {
     "velocity": 52.4,
     "gsi": 5.7,
     "infra": 0.98,
     "pixelCount": 1461,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.449999809265137
   },
   "3202066": {
     "velocity": 10.7,
     "gsi": 4.8,
     "infra": 0.74,
     "pixelCount": 2801,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.539999961853027
   },
   "3202064": {
     "velocity": 48.9,
     "gsi": 5.2,
     "infra": 0.91,
     "pixelCount": 1828,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.690000057220459
   },
   "3202063": {
     "velocity": 57.0,
     "gsi": 6.2,
     "infra": 0.97,
     "pixelCount": 1643,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.090000152587891
   },
   "3202062": {
     "velocity": 46.0,
     "gsi": 5.0,
     "infra": 0.93,
     "pixelCount": 505,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.619999885559082
   },
   "3202061": {
     "velocity": 53.2,
     "gsi": 5.6,
     "infra": 0.88,
     "pixelCount": 2130,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.78000020980835
   },
   "3202060": {
     "velocity": 56.3,
     "gsi": 6.2,
     "infra": 0.98,
     "pixelCount": 950,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.059999942779541
   },
   "3202058": {
     "velocity": 55.2,
     "gsi": 6.1,
     "infra": 1.0,
     "pixelCount": 84,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.340000152587891
   },
   "3202057": {
     "velocity": 55.2,
     "gsi": 6.1,
     "infra": 1.0,
     "pixelCount": 196,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.599999904632568
   },
   "3202056": {
     "velocity": 52.9,
     "gsi": 5.9,
     "infra": 1.0,
     "pixelCount": 797,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.239999771118164
   },
   "3202055": {
     "velocity": 53.5,
     "gsi": 5.9,
     "infra": 0.99,
     "pixelCount": 200,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.329999923706055
   },
   "3202054": {
     "velocity": 54.1,
     "gsi": 6.0,
     "infra": 1.0,
     "pixelCount": 224,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.329999923706055
   },
   "3202053": {
     "velocity": 54.0,
     "gsi": 6.0,
     "infra": 1.0,
     "pixelCount": 262,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.199999809265137
   },
   "3202052": {
     "velocity": 54.7,
     "gsi": 6.1,
     "infra": 1.0,
     "pixelCount": 89,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.269999980926514
   },
   "3202051": {
     "velocity": 54.0,
     "gsi": 5.9,
     "infra": 0.98,
     "pixelCount": 463,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.409999847412109
   },
   "3202038": {
     "velocity": -20.3,
     "gsi": 2.0,
     "infra": 0.33,
     "pixelCount": 32367,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.039999961853027
   },
   "3202037": {
     "velocity": -29.4,
     "gsi": 3.5,
     "infra": 0.36,
     "pixelCount": 16502,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.710000038146973
   },
   "3202036": {
     "velocity": 10.8,
     "gsi": 3.7,
     "infra": 0.57,
     "pixelCount": 14702,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.349999904632568
   },
   "3202035": {
     "velocity": -33.8,
     "gsi": 3.0,
     "infra": 0.52,
     "pixelCount": 15707,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.170000076293945
   },
   "3202034": {
     "velocity": -5.9,
     "gsi": 2.4,
     "infra": 0.58,
     "pixelCount": 16829,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.440000057220459
   },
   "3202033": {
     "velocity": 25.9,
     "gsi": 3.7,
     "infra": 0.73,
     "pixelCount": 21461,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.510000228881836
   },
   "3202032": {
     "velocity": 31.7,
     "gsi": 3.8,
     "infra": 0.59,
     "pixelCount": 16877,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.460000038146973
   },
   "3202031": {
     "velocity": 12.9,
     "gsi": 4.1,
     "infra": 0.63,
     "pixelCount": 22713,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.5
   },
   "3202011": {
     "velocity": 16.1,
     "gsi": 3.4,
     "infra": 0.61,
     "pixelCount": 23735,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 6.940000057220459
   },
   "3201071": {
     "velocity": 70.3,
     "gsi": 7.6,
     "infra": 0.95,
     "pixelCount": 1827,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.09000015258789
   },
   "3201068": {
     "velocity": 65.7,
     "gsi": 6.5,
     "infra": 0.79,
     "pixelCount": 2528,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.100000381469727
   },
   "3201067": {
     "velocity": 67.1,
     "gsi": 7.1,
     "infra": 0.92,
     "pixelCount": 959,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.920000076293945
   },
   "3201066": {
     "velocity": 66.6,
     "gsi": 7.3,
     "infra": 0.97,
     "pixelCount": 1139,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.989999771118164
   },
   "3201065": {
     "velocity": 69.7,
     "gsi": 7.7,
     "infra": 1.0,
     "pixelCount": 117,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.880000114440918
   },
   "3201064": {
     "velocity": 68.7,
     "gsi": 7.6,
     "infra": 1.0,
     "pixelCount": 404,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.869999885559082
   },
   "3201063": {
     "velocity": 68.4,
     "gsi": 7.6,
     "infra": 1.0,
     "pixelCount": 100,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.71999979019165
   },
   "3201062": {
     "velocity": 68.1,
     "gsi": 7.5,
     "infra": 1.0,
     "pixelCount": 244,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.270000457763672
   },
   "3201061": {
     "velocity": 68.6,
     "gsi": 7.6,
     "infra": 1.0,
     "pixelCount": 111,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.809999942779541
   },
   "3201060": {
     "velocity": 68.2,
     "gsi": 7.5,
     "infra": 1.0,
     "pixelCount": 403,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.849999904632568
   },
   "3201058": {
     "velocity": 70.4,
     "gsi": 7.8,
     "infra": 1.0,
     "pixelCount": 106,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.020000457763672
   },
   "3201057": {
     "velocity": 68.8,
     "gsi": 7.1,
     "infra": 0.87,
     "pixelCount": 2622,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.149999618530273
   },
   "3201054": {
     "velocity": 68.2,
     "gsi": 7.6,
     "infra": 1.0,
     "pixelCount": 111,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.769999980926514
   },
   "3201053": {
     "velocity": 69.5,
     "gsi": 7.7,
     "infra": 1.0,
     "pixelCount": 73,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.829999923706055
   },
   "3201052": {
     "velocity": 70.3,
     "gsi": 7.8,
     "infra": 1.0,
     "pixelCount": 96,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.909999847412109
   },
   "3201039": {
     "velocity": -47.8,
     "gsi": 3.3,
     "infra": 0.26,
     "pixelCount": 48966,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.479999542236328
   },
   "3201038": {
     "velocity": 17.0,
     "gsi": 2.3,
     "infra": 0.44,
     "pixelCount": 38164,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.289999961853027
   },
   "3201037": {
     "velocity": 36.6,
     "gsi": 3.5,
     "infra": 0.44,
     "pixelCount": 32746,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.0600004196167
   },
   "3201036": {
     "velocity": 30.7,
     "gsi": 3.4,
     "infra": 0.54,
     "pixelCount": 29912,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 9.359999656677246
   },
   "3201035": {
     "velocity": 27.4,
     "gsi": 2.8,
     "infra": 0.39,
     "pixelCount": 15270,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.680000305175781
   },
   "3201034": {
     "velocity": 33.0,
     "gsi": 4.3,
     "infra": 0.6,
     "pixelCount": 7101,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.860000133514404
   },
   "3201033": {
     "velocity": 41.7,
     "gsi": 4.3,
     "infra": 0.75,
     "pixelCount": 10281,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.869999885559082
   },
   "3201032": {
     "velocity": 15.5,
     "gsi": 2.0,
     "infra": 0.6,
     "pixelCount": 18727,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 7.71999979019165
   },
   "3201031": {
     "velocity": -15.6,
     "gsi": 3.2,
     "infra": 0.31,
     "pixelCount": 31585,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.0600004196167
   },
   "3201011": {
     "velocity": 53.3,
     "gsi": 5.6,
     "infra": 0.76,
     "pixelCount": 13242,
-    "lastUpdated": "2026-06-21"
+    "lastUpdated": "2026-06-21",
+    "extreme_gsi": 8.4399995803833
   }
 }
