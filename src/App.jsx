@@ -274,7 +274,7 @@ function App() {
           {showHeatmap && (
             <ImageOverlay
               url="/gsi_heatmap.png"
-              bounds={[[36.715861, 126.860542], [38.903812, 130.205295]]}
+              bounds={[[36.666, 126.860], [38.904, 130.205]]}
               opacity={0.6}
               zIndex={400}
             />
@@ -348,7 +348,8 @@ function App() {
             <div>🔴 위험 (하위 5%)</div>
             <div>🟠 경계 (하위 5~15%)</div>
             <div>🟡 주의 (하위 15~40%)</div>
-            <div style={{ color: '#9ca3af' }}>□ 안정 또는 데이터 없음</div>
+            <div>🟢 안정 (상위 60%)</div>
+            <div style={{ color: '#9ca3af' }}>□ 데이터 없음</div>
             <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>Sentinel-1 SAR 250만 픽셀 기반</div>
           </div>
         )}
