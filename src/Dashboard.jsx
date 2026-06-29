@@ -273,18 +273,18 @@ function Dashboard({ onNavigate }) {
             <span style={{ fontSize: '11px', opacity: 0.85 }}>위험·경계 픽셀 38만행, 정확한 좌표 포함</span>
           </a>
 
-          {/* 3. 히트맵 PNG */}
+          {/* 3. 위험 픽셀 SHP */}
           <a
-            href="/gsi_heatmap.png"
-            download="gsi_heatmap.png"
+            href="/gsi_danger.zip"
+            download="gsi_danger.zip"
             style={{
               display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
               gap: '2px', background: '#1e40af', color: 'white',
               padding: '10px 16px', borderRadius: '8px', textDecoration: 'none',
             }}
           >
-            <span style={{ fontSize: '14px', fontWeight: '700' }}>🗺️ GSI 히트맵 이미지 (.png)</span>
-            <span style={{ fontSize: '11px', opacity: 0.85 }}>픽셀 단위 위험도 시각화, GIS 소프트웨어 호환</span>
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>🗺️ 위험 픽셀 SHP 다운로드</span>
+            <span style={{ fontSize: '11px', opacity: 0.85 }}>위험·경계 픽셀 좌표, GIS 소프트웨어 호환</span>
           </a>
         </div>
 

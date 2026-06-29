@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+public/gsi_danger.shp
+public/gsi_danger.dbf
+public/gsi_danger.prj
+public/gsi_danger.shx
