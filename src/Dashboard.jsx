@@ -267,54 +267,8 @@ function Dashboard({ onNavigate }) {
           </a>
         </div>
 
-        {/* 메인: 좌측 목록 + 우측 상세 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '16px', alignItems: 'start' }}>
-          {/* 좌측: 시군 순위 목록 */}
-          <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
-            <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', fontWeight: '700', fontSize: '14px', color: '#374151' }}>
-              위험 지점 순위 (클릭하면 상세 분석)
-            </div>
-            <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
-              {ranked.map((r, i) => {
-                const bd    = getGSIBreakdown(r)
-                const grade = getQuantileGrade(bd.gsi)
-                const isSelected = selected?.id === r.id
-                return (
-                  <div
-                    key={r.id}
-                    onClick={() => setSelected(r)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '12px',
-                      padding: '12px 16px', cursor: 'pointer',
-                      borderBottom: '1px solid #f9fafb',
-                      background: isSelected ? '#eff6ff' : 'white',
-                      borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent',
-                      transition: 'background 0.15s',
-                    }}
-                  >
-                    <span style={{ fontSize: '15px', fontWeight: '700', color: i < 3 ? '#dc2626' : '#9ca3af', minWidth: '24px' }}>
-                      {i + 1}
-                    </span>
-                    <span style={{ flex: 1, fontWeight: '600', color: '#111827' }}>{r.name}</span>
-                    <span style={{ fontSize: '11px', fontWeight: '600', color: grade.color,
-                      background: `${grade.color}15`, padding: '2px 6px', borderRadius: '4px' }}>
-                      {grade.emoji} {grade.label}
-                    </span>
-                    <span style={{ fontWeight: '700', color: grade.color, minWidth: '36px', textAlign: 'right' }}>
-                      {bd.gsi}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* 우측: 상세 패널 */}
-          <DetailPanel region={selected} actionOf={actionOf} />
-        </div>
-
         {/* 읍면동 순위 테이블 */}
-        <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden', marginTop: '16px' }}>
+        <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden', marginBottom: '16px' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', fontWeight: '700', fontSize: '14px', color: '#374151' }}>
             읍면동 순위 (총 {_rankedSubmunicipalities.length}개)
             <span style={{ fontWeight: '400', fontSize: '12px', color: '#9ca3af', marginLeft: '8px' }}>극값GSI 기준 분위수 등급</span>
@@ -361,6 +315,52 @@ function Dashboard({ onNavigate }) {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* 메인: 좌측 목록 + 우측 상세 */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '16px', alignItems: 'start' }}>
+          {/* 좌측: 시군 순위 목록 */}
+          <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+            <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', fontWeight: '700', fontSize: '14px', color: '#374151' }}>
+              위험 지점 순위 (클릭하면 상세 분석)
+            </div>
+            <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+              {ranked.map((r, i) => {
+                const bd    = getGSIBreakdown(r)
+                const grade = getQuantileGrade(bd.gsi)
+                const isSelected = selected?.id === r.id
+                return (
+                  <div
+                    key={r.id}
+                    onClick={() => setSelected(r)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px',
+                      padding: '12px 16px', cursor: 'pointer',
+                      borderBottom: '1px solid #f9fafb',
+                      background: isSelected ? '#eff6ff' : 'white',
+                      borderLeft: isSelected ? '3px solid #3b82f6' : '3px solid transparent',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <span style={{ fontSize: '15px', fontWeight: '700', color: i < 3 ? '#dc2626' : '#9ca3af', minWidth: '24px' }}>
+                      {i + 1}
+                    </span>
+                    <span style={{ flex: 1, fontWeight: '600', color: '#111827' }}>{r.name}</span>
+                    <span style={{ fontSize: '11px', fontWeight: '600', color: grade.color,
+                      background: `${grade.color}15`, padding: '2px 6px', borderRadius: '4px' }}>
+                      {grade.emoji} {grade.label}
+                    </span>
+                    <span style={{ fontWeight: '700', color: grade.color, minWidth: '36px', textAlign: 'right' }}>
+                      {bd.gsi}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* 우측: 상세 패널 */}
+          <DetailPanel region={selected} actionOf={actionOf} />
         </div>
 
         {/* 하단 안내 + 돌아가기 */}
