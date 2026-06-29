@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { getRiskLevel, generateTimeSeries, getSafetyIndex, getSafetyLevel, getCivicExplanation } from './regions'
+import { getRiskLevel, generateTimeSeries, getSafetyIndex, getSafetyLevel, getCivicExplanation, getSigunguGrade } from './regions'
 import { useIsMobile } from './useIsMobile'
 
 ChartJS.register(
@@ -167,7 +167,21 @@ function SidePanel({ region, onClose, isChatOpen }) {
   }, [isMobile, region])
 
   const safety = useMemo(() => {
-  return getSafetyIndex(region?.gsi ?? 0)
+  if (region?.parentRegion) {
+    // 읍면동: 기존 getSafetyIndex 사용
+    return getSafetyIndex(region?.gsi ?? 0)
+  }
+  // 시군: 분위수 기준
+  const grade = getSigunguGrade(region)
+  return {
+    score: parseFloat((region?.gsi ?? 0).toFixed(1)),
+    level: {
+      ...grade,
+      description: getSafetyIndex(region?.gsi ?? 0).level.description,
+      civicMessage: getSafetyIndex(region?.gsi ?? 0).level.civicMessage,
+      officialMessage: getSafetyIndex(region?.gsi ?? 0).level.officialMessage,
+    }
+  }
 }, [region])
   const civic = useMemo(() => getCivicExplanation(region?.velocity ?? 0), [region])
 
