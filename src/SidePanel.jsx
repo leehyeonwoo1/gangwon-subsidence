@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js'
-import { getRiskLevel, generateTimeSeries, getSafetyIndex, getSafetyLevel, getCivicExplanation, getSigunguGrade } from './regions'
+import { getRiskLevel, generateTimeSeries, getSafetyIndex, getSafetyLevel, getCivicExplanation, getSigunguGrade, getSubmunicipalityGrade } from './regions'
 import { useIsMobile } from './useIsMobile'
 
 ChartJS.register(
@@ -125,24 +125,22 @@ function SidePanel({ region, onClose, isChatOpen }) {
     }
   }, [isMobile, region])
 
-  // ✅ 수정: null 체크 + 시군/읍면동 분기
   const safety = useMemo(() => {
     if (!region) return getSafetyIndex(0)
-    if (region.parentRegion) {
-      // 읍면동: 기존 getSafetyIndex 사용
-      return getSafetyIndex(region.gsi ?? 0)
-    }
-    // 시군: 분위수 기준
-    const grade = getSigunguGrade(region)
-    const fallback = getSafetyIndex(region.gsi ?? 0)
+    const gsiScore = region.gsi ?? 0
+    // 시군/읍면동 공통: 분위수 기반 grade + gsi 점수 표시
+    const grade = region.parentRegion
+      ? getSubmunicipalityGrade(region)   // 읍면동: Q5=1.60/Q15=2.10/Q40=3.30
+      : getSigunguGrade(region)           // 시군: rank 기반
+    const fallback = getSafetyLevel(gsiScore)
     return {
-      score: parseFloat((region.gsi ?? 0).toFixed(1)),
+      score: parseFloat(gsiScore.toFixed(1)),
       level: {
         ...grade,
-        description: fallback.level.description,
-        civicMessage: fallback.level.civicMessage,
-        officialMessage: fallback.level.officialMessage,
-      }
+        description:     fallback.description,
+        civicMessage:    fallback.civicMessage,
+        officialMessage: fallback.officialMessage,
+      },
     }
   }, [region])
 

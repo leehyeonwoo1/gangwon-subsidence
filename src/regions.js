@@ -234,25 +234,14 @@ export function getSigunguGrade(region) {
   return               { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
 
-// ===== 읍면동 등급 (extreme_gsi → gsi → velocity fallback) =====
-// Dashboard.jsx의 getQuantileGrade와 동일한 분위수 경계값 사용
-// realSubmunicipalityData의 extreme_gsi 기준 _Q5/Q15/Q40은
-// Dashboard에서 계산되므로 여기선 시군 GSI 범위 기준 절대값으로 처리
+// ===== 읍면동 등급 (gsi 분위수 기반, 낮을수록 위험) =====
+// realSubmunicipalityData.json gsi 분포 기준 분위수 임계값
+// 하위5%: gsi < 1.60 / 5~15%: < 2.10 / 15~40%: < 3.30 / 40%+: 안정
 export function getSubmunicipalityGrade(data) {
-  // extreme_gsi 있으면 우선 사용, 없으면 gsi, 둘 다 없으면 velocity fallback
-  if (data.extreme_gsi != null) {
-    return getGradeByGsi(data.extreme_gsi)
-  }
-  if (data.gsi != null) {
-    return getGradeByGsi(data.gsi)
-  }
-  // velocity fallback
-  return getRiskLevel(data.velocity)
-}
-
-function getGradeByGsi(gsi) {
-  if (gsi < 6.33) return { label: '위험', color: '#dc2626', emoji: '🔴' }
-  if (gsi < 6.78) return { label: '경계', color: '#ea580c', emoji: '🟠' }
-  if (gsi < 7.89) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
-  return            { label: '안정', color: '#16a34a', emoji: '🟢' }
+  const gsi = data.gsi   // realSubmunicipalityData.json 의 gsi 값 사용
+  if (gsi == null) return getRiskLevel(data.velocity)
+  if (gsi < 1.60) return { label: '위험', color: '#dc2626', emoji: '🔴' }
+  if (gsi < 2.10) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  if (gsi < 3.30) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
+  return              { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
