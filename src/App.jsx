@@ -372,12 +372,12 @@ function App() {
         )}
 
         <div className="legend-card" style={{ position: 'absolute', bottom: '20px', right: selectedRegion ? '400px' : '20px', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', zIndex: 1000, fontSize: '13px', lineHeight: '1.9', transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-          <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '13px' }}>안전 지수 (0~10점)</div>
-          <div>🔴 위험 (0~2점)</div>
-          <div>🟠 경계 (2~4점)</div>
-          <div>🟡 주의 (4~6점)</div>
-          <div>🟢 양호/안전 (6점 이상)</div>
-          <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>높을수록 안전합니다</div>
+          <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '13px' }}>안전 등급</div>
+<div>🔴 위험 (강원도 내 가장 위험)</div>
+<div>🟠 경계 (주의 깊은 관찰 필요)</div>
+<div>🟡 주의 (정기 점검 권장)</div>
+<div>🟢 안정 (현재 안정적)</div>
+<div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>강원도 18개 시군 상대 비교 기준</div>
         </div>
 
         <div className="info-card" style={{ position: 'absolute', top: '20px', left: '60px', padding: '14px 22px', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', zIndex: 1000 }}>
