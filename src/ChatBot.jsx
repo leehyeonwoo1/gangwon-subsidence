@@ -51,15 +51,24 @@ function ChatBot({ isOpen, onClose, onRegionSelect, selectedRegion }) {
     let contextRegion = selectedRegion
     if (onRegionSelect) {
       if (
-        userMessage.content.includes('가장 위험') ||
-        userMessage.content.includes('제일 위험') ||
-        userMessage.content.includes('가장 조심') ||
-        userMessage.content.includes('제일 조심')
-      ) {
-        const most = [...gangwonRegions].sort((a, b) => Math.abs(b.velocity) - Math.abs(a.velocity))[0]
-        onRegionSelect(most)
-        contextRegion = most
-      } else {
+  userMessage.content.includes('가장 위험') ||
+  userMessage.content.includes('제일 위험') ||
+  userMessage.content.includes('가장 조심') ||
+  userMessage.content.includes('제일 조심')
+) {
+  // GSI 낮은 순 (위험한 순)
+  const most = [...gangwonRegions].sort((a, b) => a.gsi - b.gsi)[0]
+  onRegionSelect(most)
+  contextRegion = most
+} else if (
+  userMessage.content.includes('가장 안전') ||
+  userMessage.content.includes('제일 안전')
+) {
+  // GSI 높은 순 (안전한 순)
+  const safest = [...gangwonRegions].sort((a, b) => b.gsi - a.gsi)[0]
+  onRegionSelect(safest)
+  contextRegion = safest
+} else {
         const mentioned = gangwonRegions.find((r) =>
           userMessage.content.includes(r.name.replace('시', '').replace('군', ''))
         )
