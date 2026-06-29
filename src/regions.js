@@ -227,8 +227,9 @@ export function getGSIBreakdown(region) {
   const nVelocity = normalize(Math.abs(velocity), 0, 119.8)
   const riskScore = nVelocity * 0.35 + infra * 0.25
 
-  const gsi = (region.gsi !== undefined && region.gsi !== null)
-    ? parseFloat(region.gsi.toFixed(1))
+  const gsiSource = region.extreme_gsi ?? region.gsi
+  const gsi = (gsiSource !== undefined && gsiSource !== null)
+    ? parseFloat(gsiSource.toFixed(1))
     : parseFloat((10 * (1 - riskScore)).toFixed(1))
 
   const result = {

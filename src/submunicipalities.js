@@ -165,6 +165,7 @@ if (!parentRegion) {
         ? real.velocity
         : generateFakeVelocity(parentRegion.velocity),
     gsi: real ? real.gsi : null,
+    extreme_gsi: real ? (real.extreme_gsi ?? null) : null,
     infra: real ? real.infra : null,
     pixelCount: real ? real.pixelCount : null,
     reason: special ? special.reason : null,
