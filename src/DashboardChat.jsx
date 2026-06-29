@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 
-const API_KEY = "AIzaSyBhviEdSHkit5GwQ443sCWWl32HXeQkSsE"
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
 const SYSTEM_PROMPT = `당신은 강원도 지반안정 모니터링 서비스 강산지킴이의 AI 안내 도우미입니다.
 - 답변은 3문장 이내, 짧고 명확하게
