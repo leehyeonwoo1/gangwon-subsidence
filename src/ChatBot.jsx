@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { gangwonRegions, getSafetyIndex } from './regions'
+import { getSafetyIndex } from './regions'
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
@@ -8,11 +8,10 @@ const SYSTEM_PROMPT = `당신은 강원도 지반안정 모니터링 서비스 '
 규칙:
 1. 답변은 3문장 이내로 짧고 명확하게
 2. 마크다운 형식(**굵게**, * 불릿, ## 제목) 절대 사용 금지 — 일반 텍스트만
-3. 지도 이동은 사용자가 명시적으로 '~보여줘', '~찾아줘', '~이동해줘' 라고 할 때만
-4. 현재 선택된 지역 GSI 점수와 등급을 바탕으로 구체적으로 답변
-5. GSI는 0~10점, 높을수록 위험, 분위수 기반 등급(위험/경계/주의/안정)
-6. 이 시스템은 위성 데이터 기반 참고 자료임을 딱 한 번만 언급
-7. 친근하고 쉬운 말로 시민이 이해할 수 있게`
+3. 현재 선택된 지역 GSI 점수와 등급을 바탕으로 구체적으로 답변
+4. GSI는 0~10점, 낮을수록 위험, 높을수록 안전, 분위수 기반 등급(위험/경계/주의/안정)
+5. 이 시스템은 위성 데이터 기반 참고 자료임을 딱 한 번만 언급
+6. 친근하고 쉬운 말로 시민이 이해할 수 있게`
 
 function buildSystemWithContext(region) {
   if (!region) return SYSTEM_PROMPT
@@ -48,22 +47,6 @@ function ChatBot({ isOpen, onClose, onRegionSelect, selectedRegion }) {
     setMessages(next)
     setInput('')
     setIsLoading(true)
-
-    // 지도 이동 로직 유지: 질문에 언급된 지역 자동 선택
-    if (onRegionSelect) {
-      if (
-        userMessage.content.includes('가장 위험') ||
-        userMessage.content.includes('제일 위험')
-      ) {
-        const most = [...gangwonRegions].sort((a, b) => a.velocity - b.velocity)[0]
-        onRegionSelect(most)
-      } else {
-        const mentioned = gangwonRegions.find((r) =>
-          userMessage.content.includes(r.name.replace('시', '').replace('군', ''))
-        )
-        if (mentioned) onRegionSelect(mentioned)
-      }
-    }
 
     try {
       // 첫 번째 user 메시지부터만 Gemini에 전달 (초기 assistant 환영 메시지 제외)
