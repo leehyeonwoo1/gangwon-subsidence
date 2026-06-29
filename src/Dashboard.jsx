@@ -205,6 +205,44 @@ function Dashboard({ onNavigate }) {
     XLSX.writeFile(wb, `강원도_점검우선순위_${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
 
+  // 읍면동 GeoJSON 클라이언트 생성 — realSubmunicipalityData + 읍면동 폴리곤
+  const handleGeoJSONDownload = () => {
+    const features = gangwonSubmunicipalities.features
+      .filter((ft) => realSubmunicipalityData[ft.properties.code])
+      .map((ft) => {
+        const code        = ft.properties.code
+        const v           = realSubmunicipalityData[code]
+        const extreme_gsi = v.extreme_gsi ?? v.gsi
+        const grade       = getQuantileGrade(extreme_gsi)
+        return {
+          type: 'Feature',
+          geometry: ft.geometry,
+          properties: {
+            code,
+            name:        ft.properties.name,
+            gsi:         parseFloat(v.gsi.toFixed(2)),
+            extreme_gsi: parseFloat(extreme_gsi.toFixed(2)),
+            grade:       grade.label,
+            velocity:    v.velocity,
+          },
+        }
+      })
+
+    const geojson = {
+      type: 'FeatureCollection',
+      crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      features,
+    }
+
+    const blob = new Blob([JSON.stringify(geojson)], { type: 'application/geo+json' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = `gangwon_gsi_eupmyeon_${new Date().toISOString().slice(0, 10)}.geojson`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div
       style={{
@@ -273,19 +311,18 @@ function Dashboard({ onNavigate }) {
             <span style={{ fontSize: '11px', opacity: 0.85 }}>위험·경계 픽셀 38만행, 정확한 좌표 포함</span>
           </a>
 
-          {/* 3. 위험 픽셀 SHP */}
-          <a
-            href="/gsi_danger.zip"
-            download="gsi_danger.zip"
+          {/* 3. 읍면동 GeoJSON */}
+          <button
+            onClick={handleGeoJSONDownload}
             style={{
               display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
               gap: '2px', background: '#1e40af', color: 'white',
-              padding: '10px 16px', borderRadius: '8px', textDecoration: 'none',
+              padding: '10px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
             }}
           >
-            <span style={{ fontSize: '14px', fontWeight: '700' }}>🗺️ 위험 픽셀 SHP 다운로드</span>
-            <span style={{ fontSize: '11px', opacity: 0.85 }}>위험·경계 픽셀 좌표, GIS 소프트웨어 호환</span>
-          </a>
+            <span style={{ fontSize: '14px', fontWeight: '700' }}>🗺️ 읍면동 GeoJSON 다운로드</span>
+            <span style={{ fontSize: '11px', opacity: 0.85 }}>읍면동 경계·GSI 등급, GIS 소프트웨어 호환</span>
+          </button>
         </div>
 
         {/* 읍면동 순위 테이블 */}
