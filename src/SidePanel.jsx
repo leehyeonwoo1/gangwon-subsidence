@@ -167,7 +167,7 @@ function SidePanel({ region, onClose, isChatOpen }) {
   }, [isMobile, region])
 
   const safety = useMemo(() => {
-  return getSafetyIndex(region?.velocity ?? 0)
+  return getSafetyIndex(region?.gsi ?? 0)
 }, [region])
   const civic = useMemo(() => getCivicExplanation(region?.velocity ?? 0), [region])
 
