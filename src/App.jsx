@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap } from "react-leaflet";
-import { gangwonRegions, getRiskLevel, getSigunguGrade } from './regions'
+import { gangwonRegions, getRiskLevel, getSigunguGrade, getSubmunicipalityGrade } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 import SidePanel from './SidePanel'
 import ChatBot from './ChatBot'
@@ -150,26 +150,23 @@ function App() {
     dashArray: null, interactive: false,
   }
 
-  // ✅ 시군 분위수 기준으로 색칠
   const municipalityStyle = (feature) => {
     const region = matchRegion(feature.properties.name)
     if (!region) return { fillOpacity: 0, opacity: 0 }
     const grade = getSigunguGrade(region)
     return {
-      color: grade.color,
-      weight: 1.5,
-      fillColor: grade.color,
-      fillOpacity: 0.45,
+      color: grade.color, weight: 1.5,
+      fillColor: grade.color, fillOpacity: 0.45,
     }
   }
 
   const submunicipalityStyle = (feature) => {
     const data = getSubmunicipalityData(feature)
     if (!data) return { fillOpacity: 0, opacity: 0 }
-    const risk = getRiskLevel(data.velocity)
+    const grade = getSubmunicipalityGrade(data)
     return {
-      color: risk.color, weight: 1,
-      fillColor: risk.color, fillOpacity: 0.55,
+      color: grade.color, weight: 1,
+      fillColor: grade.color, fillOpacity: 0.55,
     }
   }
 
@@ -198,14 +195,14 @@ function App() {
       this.bringToFront()
     })
     layer.on('mouseout', function () {
-      const risk = getRiskLevel(data.velocity)
-      this.setStyle({ fillOpacity: 0.55, weight: 1, color: risk.color })
+      const grade = getSubmunicipalityGrade(data)
+      this.setStyle({ fillOpacity: 0.55, weight: 1, color: grade.color })
     })
     layer.on('click', function () { selectRegionSmart(data) })
 
-    const risk = getRiskLevel(data.velocity)
+    const grade = getSubmunicipalityGrade(data)
     layer.bindTooltip(
-      `<strong>${data.name}</strong><br/>${data.velocity} mm/year ${risk.emoji}`,
+      `<strong>${data.name}</strong><br/>${data.velocity} mm/year ${grade.emoji}`,
       { sticky: true, direction: 'top', className: 'region-tooltip' }
     )
   }
@@ -274,13 +271,12 @@ function App() {
           {showHeatmap && (
             <ImageOverlay
               url="/gsi_heatmap.png"
-              bounds={[[36.666, 126.860], [38.904, 130.205]]}
+              bounds={[[36.715861, 126.860542], [38.903812, 130.205295]]}
               opacity={0.6}
               zIndex={400}
             />
           )}
 
-          {/* ✅ CircleMarker도 분위수 기준 */}
           {gangwonRegions.map((region) => {
             const grade = getSigunguGrade(region)
             return (
@@ -348,8 +344,7 @@ function App() {
             <div>🔴 위험 (하위 5%)</div>
             <div>🟠 경계 (하위 5~15%)</div>
             <div>🟡 주의 (하위 15~40%)</div>
-            <div>🟢 안정 (상위 60%)</div>
-            <div style={{ color: '#9ca3af' }}>□ 데이터 없음</div>
+            <div style={{ color: '#9ca3af' }}>□ 안정 또는 데이터 없음</div>
             <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>Sentinel-1 SAR 250만 픽셀 기반</div>
           </div>
         )}
@@ -374,11 +369,11 @@ function App() {
 
         <div className="legend-card" style={{ position: 'absolute', bottom: '20px', right: selectedRegion ? '400px' : '20px', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', zIndex: 1000, fontSize: '13px', lineHeight: '1.9', transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
           <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '13px' }}>안전 등급</div>
-<div>🔴 위험 (강원도 내 가장 위험)</div>
-<div>🟠 경계 (주의 깊은 관찰 필요)</div>
-<div>🟡 주의 (정기 점검 권장)</div>
-<div>🟢 안정 (현재 안정적)</div>
-<div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>강원도 18개 시군 상대 비교 기준</div>
+          <div>🔴 위험 (강원도 내 가장 위험)</div>
+          <div>🟠 경계 (주의 깊은 관찰 필요)</div>
+          <div>🟡 주의 (정기 점검 권장)</div>
+          <div>🟢 안정 (현재 안정적)</div>
+          <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>강원도 18개 시군 상대 비교 기준</div>
         </div>
 
         <div className="info-card" style={{ position: 'absolute', top: '20px', left: '60px', padding: '14px 22px', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', zIndex: 1000 }}>
