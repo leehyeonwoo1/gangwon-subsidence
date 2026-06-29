@@ -110,13 +110,8 @@ export function generateTimeSeries(key, velocity = 0) {
 
 // ===== 시민용 안전 지수 (0~10점, 높을수록 안전) =====
 // 시민 화면 전용. 공공기관 화면은 아래 GSI(getGSIBreakdown)를 사용.
-export function getSafetyIndex(velocity) {
-  // 침하든 융기든, 움직임의 크기(절댓값)로 안전도 판단
-  // 0mm/yr(안 움직임) = 10점, 80mm/yr 이상 = 0점
-  const abs = Math.abs(velocity)
-  let score = 10 - (abs / 80) * 10
-  score = Math.max(0, Math.min(10, score))
-
+export function getSafetyIndex(gsi) {
+  const score = Math.max(0, Math.min(10, gsi))
   return {
     score: parseFloat(score.toFixed(1)),
     level: getSafetyLevel(score),
