@@ -59,11 +59,15 @@ export default function DashboardChat({ region, gsi, grade, velocity }) {
       )
 
       const data = await res.json()
+      if (!res.ok) console.error('[DashboardChat] Gemini API error:', res.status, data)
       const reply =
         data.candidates?.[0]?.content?.parts?.[0]?.text ??
-        '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.'
+        (data.error?.message
+          ? `API 오류: ${data.error.message}`
+          : '응답을 받지 못했습니다. 잠시 후 다시 시도해주세요.')
       setMessages((prev) => [...prev, { role: 'model', text: reply }])
-    } catch {
+    } catch (err) {
+      console.error('[DashboardChat] fetch error:', err)
       setMessages((prev) => [
         ...prev,
         { role: 'model', text: '오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
