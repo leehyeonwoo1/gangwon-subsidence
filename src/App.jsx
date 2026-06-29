@@ -271,7 +271,7 @@ function App() {
           {showHeatmap && (
             <ImageOverlay
               url="/gsi_heatmap.png"
-              bounds={[[36.715861, 126.860542], [38.903812, 130.205295]]}
+              bounds={[[36.716019, 126.860924], [38.903519, 130.204773]]}
               opacity={0.6}
               zIndex={400}
             />
