@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup, GeoJSON, ImageOverlay, useMap } from "react-leaflet";
-import { gangwonRegions, getRiskLevel, getSafetyIndex } from './regions'
+import { gangwonRegions, getRiskLevel, getSigunguGrade } from './regions'
 import { gangwonSubmunicipalities, getSubmunicipalityData } from './submunicipalities'
 import SidePanel from './SidePanel'
 import ChatBot from './ChatBot'
@@ -150,15 +150,15 @@ function App() {
     dashArray: null, interactive: false,
   }
 
-  // ✅ 수정: GSI 기준으로 색칠
+  // ✅ 시군 분위수 기준으로 색칠
   const municipalityStyle = (feature) => {
     const region = matchRegion(feature.properties.name)
     if (!region) return { fillOpacity: 0, opacity: 0 }
-    const safety = getSafetyIndex(region.gsi ?? 0)
+    const grade = getSigunguGrade(region)
     return {
-      color: safety.level.color,
+      color: grade.color,
       weight: 1.5,
-      fillColor: safety.level.color,
+      fillColor: grade.color,
       fillOpacity: 0.45,
     }
   }
@@ -182,8 +182,8 @@ function App() {
       this.bringToFront()
     })
     layer.on('mouseout', function () {
-      const safety = getSafetyIndex(region.gsi ?? 0)
-      this.setStyle({ fillOpacity: 0.45, weight: 1.5, color: safety.level.color })
+      const grade = getSigunguGrade(region)
+      this.setStyle({ fillOpacity: 0.45, weight: 1.5, color: grade.color })
     })
     layer.on('click', function () { selectRegionSmart(region) })
     layer.bindTooltip(region.name, { sticky: true, direction: 'top', className: 'region-tooltip' })
@@ -280,9 +280,9 @@ function App() {
             />
           )}
 
-          {/* ✅ 수정: CircleMarker도 GSI 기준 색깔 */}
+          {/* ✅ CircleMarker도 분위수 기준 */}
           {gangwonRegions.map((region) => {
-            const safety = getSafetyIndex(region.gsi ?? 0)
+            const grade = getSigunguGrade(region)
             return (
               <CircleMarker
                 key={region.id}
@@ -290,7 +290,7 @@ function App() {
                 radius={8}
                 pathOptions={{
                   color: 'white',
-                  fillColor: safety.level.color,
+                  fillColor: grade.color,
                   fillOpacity: 1,
                   weight: 2,
                 }}
@@ -299,13 +299,13 @@ function App() {
                 <Popup>
                   <div style={{ minWidth: '180px' }}>
                     <h3 style={{ margin: '0 0 8px 0' }}>
-                      {safety.level.emoji} {region.name}
+                      {grade.emoji} {region.name}
                     </h3>
                     <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
                       <div>
-                        <strong>안전 지수:</strong>{' '}
-                        <span style={{ color: safety.level.color, fontWeight: 'bold' }}>
-                          {safety.score} / 10
+                        <strong>등급:</strong>{' '}
+                        <span style={{ color: grade.color, fontWeight: 'bold' }}>
+                          {grade.label}
                         </span>
                       </div>
                       <div>
@@ -318,7 +318,7 @@ function App() {
                         onClick={() => selectRegionSmart(region)}
                         style={{
                           marginTop: '8px', padding: '4px 8px',
-                          background: safety.level.color, color: 'white',
+                          background: grade.color, color: 'white',
                           border: 'none', borderRadius: '4px',
                           cursor: 'pointer', fontSize: '12px',
                         }}
@@ -344,7 +344,7 @@ function App() {
 
         {showHeatmap && (
           <div className="legend-card" style={{ position: 'absolute', bottom: '104px', left: '24px', padding: '12px 16px', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', zIndex: 1000, fontSize: '13px', lineHeight: '1.9' }}>
-            <div style={{ fontWeight: '700', marginBottom: '6px', fontSize: '13px', letterSpacing: '-0.3px' }}>픽셀 단위 위험도 (InSAR)</div>
+            <div style={{ fontWeight: '700', marginBottom: '6px', fontSize: '13px' }}>픽셀 단위 위험도 (InSAR)</div>
             <div>🔴 위험 (하위 5%)</div>
             <div>🟠 경계 (하위 5~15%)</div>
             <div>🟡 주의 (하위 15~40%)</div>
@@ -372,9 +372,9 @@ function App() {
         )}
 
         <div className="legend-card" style={{ position: 'absolute', bottom: '20px', right: selectedRegion ? '400px' : '20px', padding: '14px 18px', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', zIndex: 1000, fontSize: '13px', lineHeight: '1.9', transition: 'right 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-          <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '13px', letterSpacing: '-0.3px' }}>안전 지수 (0~10점)</div>
+          <div style={{ fontWeight: '700', marginBottom: '8px', fontSize: '13px' }}>안전 지수 (0~10점)</div>
           <div>🔴 위험 (0~2점)</div>
-          <div>🟠 경고 (2~4점)</div>
+          <div>🟠 경계 (2~4점)</div>
           <div>🟡 주의 (4~6점)</div>
           <div>🟢 양호/안전 (6점 이상)</div>
           <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '6px', borderTop: '1px solid #e5e7eb', paddingTop: '6px' }}>높을수록 안전합니다</div>
