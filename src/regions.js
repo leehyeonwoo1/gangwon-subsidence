@@ -1,7 +1,3 @@
-// 강원도 18개 시·군 침하 데이터
-// velocity 단위: mm/year (음수 = 침하, 양수 = 융기)
-// gsi_pixels.csv(InSAR 기반 GSI v0.7, 9개 날짜 제외 버전)를 시군구 경계로 집계한 실측 데이터.
-// build_real_data.py로 생성 — 갱신하려면 그 스크립트를 다시 실행할 것.
 import realRegionsData from './realRegionsData.json'
 import realTimeSeriesData from './realTimeSeriesData.json'
 
@@ -236,4 +232,27 @@ export function getSigunguGrade(region) {
   if (rank < _sgI15) return { label: '경계', color: '#ea580c', emoji: '🟠' }
   if (rank < _sgI40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
   return               { label: '안정', color: '#16a34a', emoji: '🟢' }
+}
+
+// ===== 읍면동 등급 (extreme_gsi → gsi → velocity fallback) =====
+// Dashboard.jsx의 getQuantileGrade와 동일한 분위수 경계값 사용
+// realSubmunicipalityData의 extreme_gsi 기준 _Q5/Q15/Q40은
+// Dashboard에서 계산되므로 여기선 시군 GSI 범위 기준 절대값으로 처리
+export function getSubmunicipalityGrade(data) {
+  // extreme_gsi 있으면 우선 사용, 없으면 gsi, 둘 다 없으면 velocity fallback
+  if (data.extreme_gsi != null) {
+    return getGradeByGsi(data.extreme_gsi)
+  }
+  if (data.gsi != null) {
+    return getGradeByGsi(data.gsi)
+  }
+  // velocity fallback
+  return getRiskLevel(data.velocity)
+}
+
+function getGradeByGsi(gsi) {
+  if (gsi < 6.33) return { label: '위험', color: '#dc2626', emoji: '🔴' }
+  if (gsi < 6.78) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  if (gsi < 7.89) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
+  return            { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
