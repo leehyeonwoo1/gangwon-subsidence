@@ -171,7 +171,7 @@ function ChatBot({ isOpen, onClose, onRegionSelect, selectedRegion }) {
           >
             📍 {selectedRegion.name}
             <br />
-            안전지수 {getSafetyIndex(selectedRegion.velocity).score ?? '-'}
+            안전지수 {getSafetyIndex(selectedRegion.gsi ?? 0).score ?? '-'}
           </div>
         )}
         <button
