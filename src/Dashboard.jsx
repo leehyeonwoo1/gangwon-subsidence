@@ -67,18 +67,39 @@ function getQuantileGrade(gsi) {
   if (gsi < _Q40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
   return            { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
+// ── 시군 18개 전용 rank 기반 등급 시스템 ────────────────────────
+// 시군 gsi 범위(1.9~6.1)가 읍면동 극값 임계값(_Q5=6.33)보다 낮아
+// getQuantileGrade를 그대로 쓰면 전원 위험 분류됨 → 별도 처리
+const _sortedSigungu = [...gangwonRegions].sort((a, b) => b.gsi - a.gsi)
+const _nSg   = _sortedSigungu.length                     // 18
+const _sgI5  = Math.max(1, Math.ceil(_nSg * 0.05))       // 1
+const _sgI15 = Math.ceil(_nSg * 0.15)                    // 3
+const _sgI40 = Math.ceil(_nSg * 0.40)                    // 8
+const _sigunguRankMap = Object.fromEntries(
+  _sortedSigungu.map((r, i) => [r.id, i])
+)
+
+function getSigunguGrade(region) {
+  const rank = _sigunguRankMap[region.id]
+  if (rank === undefined) return { label: '안정', color: '#16a34a', emoji: '🟢' }
+  if (rank < _sgI5)  return { label: '위험', color: '#dc2626', emoji: '🔴' }
+  if (rank < _sgI15) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  if (rank < _sgI40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
+  return               { label: '안정', color: '#16a34a', emoji: '🟢' }
+}
 // ───────────────────────────────────────────────────────────────
 
 function Dashboard({ onNavigate }) {
-  // GSI 높은 순(위험한 순) 정렬 — extreme_gsi ?? gsi 기준, 높을수록 위험
-  const ranked = [...gangwonRegions].sort((a, b) => getGSIBreakdown(b).gsi - getGSIBreakdown(a).gsi)
+  // GSI 높은 순(위험한 순) 정렬
+  const ranked = [...gangwonRegions].sort((a, b) => b.gsi - a.gsi)
 
   const [selected, setSelected] = useState(ranked[0])
 
-  const actionOf = (gsi) => {
-    if (gsi < _Q5)  return '긴급 정밀진단'
-    if (gsi < _Q15) return '정밀진단 권장'
-    if (gsi < _Q40) return '정기 점검'
+  const actionOf = (region) => {
+    const { label } = getSigunguGrade(region)
+    if (label === '위험') return '긴급 정밀진단'
+    if (label === '경계') return '정밀진단 권장'
+    if (label === '주의') return '정기 점검'
     return '모니터링 유지'
   }
 
@@ -154,7 +175,7 @@ function Dashboard({ onNavigate }) {
   const handleDownload = () => {
     const rows = ranked.map((r, i) => {
       const bd    = getGSIBreakdown(r)
-      const grade = getQuantileGrade(bd.gsi)
+      const grade = getSigunguGrade(r)
       return {
         '순위': i + 1,
         '지역': r.name,
@@ -163,7 +184,7 @@ function Dashboard({ onNavigate }) {
         '변위방향': bd.raw.velocity < 0 ? '침하' : bd.raw.velocity > 0 ? '융기' : '안정',
         '인프라근접도(%)': Math.round(bd.raw.infra * 100),
         '등급': grade.label,
-        '권장조치': actionOf(bd.gsi),
+        '권장조치': actionOf(r),
         '최종갱신': r.lastUpdated,
       }
     })
@@ -327,7 +348,7 @@ function Dashboard({ onNavigate }) {
             <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
               {ranked.map((r, i) => {
                 const bd    = getGSIBreakdown(r)
-                const grade = getQuantileGrade(bd.gsi)
+                const grade = getSigunguGrade(r)
                 const isSelected = selected?.id === r.id
                 return (
                   <div
@@ -383,7 +404,7 @@ function Dashboard({ onNavigate }) {
       {/* AI 챗봇 — 선택된 시군 컨텍스트 자동 포함 */}
       {(() => {
         const bd    = getGSIBreakdown(selected)
-        const grade = getQuantileGrade(bd.gsi)
+        const grade = getSigunguGrade(selected)
         return (
           <DashboardChat
             region={selected}
@@ -413,7 +434,7 @@ function SummaryCard({ label, value, sub, color }) {
 function DetailPanel({ region, actionOf }) {
   if (!region) return null
   const bd    = getGSIBreakdown(region)
-  const grade = getQuantileGrade(bd.gsi)
+  const grade = getSigunguGrade(region)
 
   const velDir   = bd.raw.velocity < 0 ? '침하' : bd.raw.velocity > 0 ? '융기' : '안정'
   const velColor = bd.raw.velocity < 0 ? '#dc2626' : bd.raw.velocity > 0 ? '#2563eb' : '#16a34a'
@@ -485,7 +506,7 @@ function DetailPanel({ region, actionOf }) {
       {/* 권장 조치 */}
       <div style={{ background: `${grade.color}11`, border: `1px solid ${grade.color}33`, borderRadius: '10px', padding: '12px 14px' }}>
         <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px' }}>권장 조치</div>
-        <div style={{ fontSize: '15px', fontWeight: '700', color: grade.color }}>{actionOf(bd.gsi)}</div>
+        <div style={{ fontSize: '15px', fontWeight: '700', color: grade.color }}>{actionOf(region)}</div>
       </div>
     </div>
   )
