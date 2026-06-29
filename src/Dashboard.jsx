@@ -17,46 +17,57 @@ koreaMunicipalities.features.forEach((ft) => {
   if (c.startsWith('32') && c.length === 5) _sigunCodeToName[c] = ft.properties.name
 })
 
-// ── 모듈 레벨: extreme_gsi 기반 등급 시스템 ──────────────────────
-// 스케일: 0~10, 높을수록 위험 (calculate_gsi_v07.py 기준)
-// extreme_gsi = 읍면동 내 상위 10% 위험 픽셀 평균; 없으면 gsi로 fallback
-const GSI_T3 = 7.216  // 위험 하한
-const GSI_T2 = 4.842  // 경계 하한
-const GSI_T1 = 2.524  // 주의 하한
+// 읍면동 순위 — extreme_gsi 오름차순 (낮을수록 위험 in current quantile system)
+const _rankedSubmunicipalities = Object.entries(realSubmunicipalityData)
+  .map(([code, v]) => ({
+    code,
+    name:        _codeToSubName[code] ?? code,
+    sigun:       _sigunCodeToName[code.slice(0, 5)] ?? '?',
+    gsi:         v.gsi,
+    extreme_gsi: v.extreme_gsi ?? v.gsi,
+  }))
+  .sort((a, b) => a.extreme_gsi - b.extreme_gsi)
 
-// 읍면동 실제 등급 분포 (extreme_gsi ?? gsi, 절대 임계값 기준)
-const _gsiScores = Object.values(realSubmunicipalityData).map((v) => v.extreme_gsi ?? v.gsi)
-const GRADE_COUNTS = {
-  danger:    _gsiScores.filter((g) => g >= GSI_T3).length,
-  gyeonggye: _gsiScores.filter((g) => g >= GSI_T2 && g < GSI_T3).length,
-  juui:      _gsiScores.filter((g) => g >= GSI_T1 && g < GSI_T2).length,
-  anjeong:   _gsiScores.filter((g) => g < GSI_T1).length,
+// ── 모듈 레벨: 읍면동 분위수 기반 등급 시스템 ──────────────────
+// extreme_gsi(상위 10% 위험 픽셀 평균)를 기준으로 분위수 재계산
+// gsi → extreme_gsi ?? gsi 로 대체; 분위수 구조(5%/10%/25%/60%)는 유지
+const _sortedGSIs = Object.values(realSubmunicipalityData)
+  .map((r) => r.extreme_gsi ?? r.gsi)
+  .sort((a, b) => a - b)
+const _n   = _sortedGSIs.length              // 185
+const _I5  = Math.floor(_n * 0.05)          // 9
+const _I15 = Math.floor(_n * 0.15)          // 27
+const _I40 = Math.floor(_n * 0.40)          // 74
+
+// 분위수 기반 카운트 (rank 기반)
+const QUANTILE_COUNTS = {
+  danger:    _I5,               // 9
+  gyeonggye: _I15 - _I5,       // 18
+  juui:      _I40 - _I15,      // 47
+  anjeong:   _n   - _I40,      // 111
 }
 
-// 공통 등급 함수 — 시군 gsi / 읍면동 extreme_gsi 모두 동일 스케일
-function getGradeByScore(gsi) {
-  if (gsi >= GSI_T3) return { label: '위험', color: '#dc2626', emoji: '🔴' }
-  if (gsi >= GSI_T2) return { label: '경계', color: '#ea580c', emoji: '🟠' }
-  if (gsi >= GSI_T1) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
-  return               { label: '안정', color: '#16a34a', emoji: '🟢' }
+// rank 경계의 실제 extreme_gsi 임계값
+const _Q5  = _sortedGSIs[_I5]    // 6.33
+const _Q15 = _sortedGSIs[_I15]   // 6.78
+const _Q40 = _sortedGSIs[_I40]   // 7.89
+
+// 등급 + 권장조치 (요약 보고서용)
+function getGradeAction(extremeGsi) {
+  if (extremeGsi < _Q5)  return { grade: '위험', action: '즉시 현장 정밀점검 필요' }
+  if (extremeGsi < _Q15) return { grade: '경계', action: '우선 점검 대상 지정 권고' }
+  if (extremeGsi < _Q40) return { grade: '주의', action: '정기 모니터링 유지' }
+  return                         { grade: '안정', action: '현상 유지' }
 }
 
-// 등급 + 권장조치 (요약 보고서용) — code 기반으로 extreme_gsi 우선 사용
-function getGradeAction(code, v) {
-  const score = v.extreme_gsi ?? v.gsi
-  const { label } = getGradeByScore(score)
-  const actions = {
-    '위험': '즉시 현장 정밀점검 필요',
-    '경계': '우선 점검 대상 지정 권고',
-    '주의': '정기 모니터링 유지',
-    '안정': '현상 유지',
-  }
-  return { grade: label, action: actions[label] }
+// 개별 항목 등급 함수
+function getQuantileGrade(gsi) {
+  if (gsi < _Q5)  return { label: '위험', color: '#dc2626', emoji: '🔴' }
+  if (gsi < _Q15) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  if (gsi < _Q40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
+  return            { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
-
-// 하위 호환 — 시군 등급 표시에 사용 (기존 호출부 유지)
-const getQuantileGrade = getGradeByScore
-// ────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────
 
 function Dashboard({ onNavigate }) {
   // GSI 높은 순(위험한 순) 정렬 — extreme_gsi ?? gsi 기준, 높을수록 위험
@@ -65,9 +76,9 @@ function Dashboard({ onNavigate }) {
   const [selected, setSelected] = useState(ranked[0])
 
   const actionOf = (gsi) => {
-    if (gsi >= GSI_T3) return '긴급 정밀진단'
-    if (gsi >= GSI_T2) return '정밀진단 권장'
-    if (gsi >= GSI_T1) return '정기 점검'
+    if (gsi < _Q5)  return '긴급 정밀진단'
+    if (gsi < _Q15) return '정밀진단 권장'
+    if (gsi < _Q40) return '정기 점검'
     return '모니터링 유지'
   }
 
@@ -77,7 +88,7 @@ function Dashboard({ onNavigate }) {
 
     const sorted = Object.entries(realSubmunicipalityData)
       .map(([code, v]) => {
-        const { grade, action } = getGradeAction(code, v)
+        const { grade, action } = getGradeAction(v.extreme_gsi ?? v.gsi)
         const score = v.extreme_gsi ?? v.gsi
         return {
           name:     _codeToSubName[code] ?? code,
@@ -200,16 +211,16 @@ function Dashboard({ onNavigate }) {
         <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 4px' }}>
           강원도 18개 시·군 · GSI 높은 순(위험) 정렬 · 위성 InSAR 광역 분석 기반
         </p>
-        <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 20px' }}>
-          읍면동 등급: 극값GSI(상위 10% 위험 픽셀 평균) — 위험 ≥7.2 / 경계 ≥4.8 / 주의 ≥2.5 / 안정
+        <p style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 20px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '8px 12px' }}>
+          ⚠️ 읍면동 평균 GSI가 낮아도 내부에 위험 픽셀이 있을 수 있습니다. 상세 픽셀 데이터 다운로드로 정확한 점검 좌표를 확인하세요.
         </p>
 
         {/* 요약 카드 — 읍면동 185개 rank 기반 분위수 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-          <SummaryCard label="🔴 위험" value={GRADE_COUNTS.danger}    sub={`극값GSI ≥ ${GSI_T3}`}        color="#dc2626" />
-          <SummaryCard label="🟠 경계" value={GRADE_COUNTS.gyeonggye} sub={`${GSI_T2}~${GSI_T3}`}        color="#ea580c" />
-          <SummaryCard label="🟡 주의" value={GRADE_COUNTS.juui}      sub={`${GSI_T1}~${GSI_T2}`}        color="#ca8a04" />
-          <SummaryCard label="🟢 안정" value={GRADE_COUNTS.anjeong}   sub={`극값GSI < ${GSI_T1}`}        color="#16a34a" />
+          <SummaryCard label="🔴 위험" value={QUANTILE_COUNTS.danger}    sub={`하위 5% (n=${QUANTILE_COUNTS.danger})`}    color="#dc2626" />
+          <SummaryCard label="🟠 경계" value={QUANTILE_COUNTS.gyeonggye} sub={`5~15% (n=${QUANTILE_COUNTS.gyeonggye})`}  color="#ea580c" />
+          <SummaryCard label="🟡 주의" value={QUANTILE_COUNTS.juui}      sub={`15~40% (n=${QUANTILE_COUNTS.juui})`}     color="#ca8a04" />
+          <SummaryCard label="🟢 안정" value={QUANTILE_COUNTS.anjeong}   sub={`상위 60% (n=${QUANTILE_COUNTS.anjeong})`} color="#16a34a" />
         </div>
 
         {/* 다운로드 */}
@@ -300,6 +311,56 @@ function Dashboard({ onNavigate }) {
 
           {/* 우측: 상세 패널 */}
           <DetailPanel region={selected} actionOf={actionOf} />
+        </div>
+
+        {/* 읍면동 순위 테이블 */}
+        <div style={{ background: 'white', borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden', marginTop: '16px' }}>
+          <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6', fontWeight: '700', fontSize: '14px', color: '#374151' }}>
+            읍면동 순위 (총 {_rankedSubmunicipalities.length}개)
+            <span style={{ fontWeight: '400', fontSize: '12px', color: '#9ca3af', marginLeft: '8px' }}>극값GSI 기준 분위수 등급</span>
+          </div>
+          <div style={{ maxHeight: '420px', overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <thead>
+                <tr style={{ background: '#f9fafb', position: 'sticky', top: 0, zIndex: 1 }}>
+                  <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: '700', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>순위</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'left',   fontWeight: '700', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>읍면동</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'left',   fontWeight: '700', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>시군</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right',  fontWeight: '700', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>평균GSI</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'right',  fontWeight: '700', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>극값GSI</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: '700', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>등급</th>
+                  <th style={{ padding: '8px 12px', textAlign: 'center', fontWeight: '700', color: '#374151', borderBottom: '1px solid #e5e7eb' }}>
+                    <span title="읍면동 내 상위 10% 위험 픽셀 기준">위험 픽셀 포함 ⓘ</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {_rankedSubmunicipalities.map(({ code, name, sigun, gsi, extreme_gsi }, i) => {
+                  const grade    = getQuantileGrade(extreme_gsi)
+                  const hasDanger = grade.label === '위험' || grade.label === '경계'
+                  return (
+                    <tr key={code} style={{ borderBottom: '1px solid #f3f4f6', background: hasDanger ? '#fff5f5' : 'white' }}>
+                      <td style={{ padding: '7px 12px', textAlign: 'center', color: i < 9 ? '#dc2626' : '#9ca3af', fontWeight: '700' }}>{i + 1}</td>
+                      <td style={{ padding: '7px 12px', fontWeight: '600', color: '#111827' }}>{name}</td>
+                      <td style={{ padding: '7px 12px', color: '#6b7280' }}>{sigun}</td>
+                      <td style={{ padding: '7px 12px', textAlign: 'right', color: '#374151' }}>{parseFloat(gsi.toFixed(2))}</td>
+                      <td style={{ padding: '7px 12px', textAlign: 'right', fontWeight: '600', color: grade.color }}>{parseFloat(extreme_gsi.toFixed(2))}</td>
+                      <td style={{ padding: '7px 12px', textAlign: 'center' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: grade.color, background: `${grade.color}18`, padding: '2px 6px', borderRadius: '4px' }}>
+                          {grade.emoji} {grade.label}
+                        </span>
+                      </td>
+                      <td style={{ padding: '7px 12px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        {hasDanger
+                          ? <span style={{ color: '#dc2626', fontWeight: '600', fontSize: '12px' }}>🔴 위험픽셀 포함</span>
+                          : <span style={{ color: '#d1d5db' }}>⬜</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* 하단 안내 + 돌아가기 */}
