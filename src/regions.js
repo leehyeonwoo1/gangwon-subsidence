@@ -7,16 +7,14 @@ import realTimeSeriesData from './realTimeSeriesData.json'
 
 export const gangwonRegions = realRegionsData
 
-// 침하 속도에 따라 위험 등급 계산 (지도 색칠용)
 export function getRiskLevel(velocity) {
-  const abs = Math.abs(velocity) // 침하든 융기든 움직임의 크기로 판단
+  const abs = Math.abs(velocity)
   if (abs >= 60) return { grade: '위험', color: '#dc2626', emoji: '🔴' }
   if (abs >= 35) return { grade: '경고', color: '#ea580c', emoji: '🟠' }
   if (abs >= 15) return { grade: '주의', color: '#eab308', emoji: '🟡' }
   return { grade: '안전', color: '#16a34a', emoji: '🟢' }
 }
 
-// 위험 등급별 상세 정보 (행동 가이드, 권장 사항)
 export function getRiskGuide(velocity) {
   if (velocity <= -10) {
     return {
@@ -83,15 +81,10 @@ export function getRiskGuide(velocity) {
   }
 }
 
-// 시계열 (시민용 그래프)
-// timeseries.h5(InSAR 누적변위, 9개 날짜 제외 버전)를 시군/읍면동 경계로 월별 집계한
-// 실측 데이터(realTimeSeriesData.json, build_real_timeseries.py로 생성). 키는 시군은
-// id(예: 'inje'), 읍면동은 7자리 code. 매칭되는 실측값이 없으면 velocity 기반 가짜값으로 fallback.
 export function generateTimeSeries(key, velocity = 0) {
   const real = realTimeSeriesData[key]
   if (real) return real
 
-  // fallback: 실측 데이터가 없는 일부 읍면동(예: 태백시 일부 동)용 가짜 시계열
   const months = [
     '2025-05', '2025-06', '2025-07', '2025-08',
     '2025-09', '2025-10', '2025-11', '2025-12',
@@ -108,8 +101,6 @@ export function generateTimeSeries(key, velocity = 0) {
   return { months, data }
 }
 
-// ===== 시민용 안전 지수 (0~10점, 높을수록 안전) =====
-// 시민 화면 전용. 공공기관 화면은 아래 GSI(getGSIBreakdown)를 사용.
 export function getSafetyIndex(gsi) {
   const score = Math.max(0, Math.min(10, gsi))
   return {
@@ -159,7 +150,6 @@ export function getSafetyLevel(score) {
   }
 }
 
-// 시민용 친근한 설명 (침하/융기 자동)
 export function getCivicExplanation(velocity) {
   const safety = getSafetyIndex(velocity)
   const speed = Math.abs(velocity)
@@ -181,7 +171,6 @@ export function getCivicExplanation(velocity) {
   }
 }
 
-// 한국어 조사 처리: 받침 따라 은/는, 이/가, 을/를 자동 선택
 export function withParticle(word, particle) {
   if (!word || word.length === 0) return word + (particle.charAt(0) || '')
   const lastChar = word.charCodeAt(word.length - 1)
@@ -195,14 +184,6 @@ export function withParticle(word, particle) {
   if (particle === '와과' || particle === '와/과') return word + (hasJongseong ? '과' : '와')
   return word + particle
 }
-
-// ===== 공공기관용 GSI (Ground Safety Index) — 멘토링 2-4 공식 =====
-// risk_score = |velocity|×0.35 + |acceleration|×0.20 + (1−coherence)×0.20 + 산사태근접도×0.25
-// GSI = 10 × (1 − risk_score)   (높을수록 안전)
-//
-// velocity·gsi·landslideProximity(=region.infra)는 gsi_pixels.csv 실측 집계값(realRegionsData.json) 사용 중.
-// ⚠️ acceleration·coherence는 아직 시연용 가짜값 (아래 "가짜값 생성" 블록).
-//    Phase 2: 실측 coherence(avgSpatialCoh.h5)와 시계열 가속도 연동 예정.
 
 const gsiCache = new Map()
 
@@ -218,7 +199,6 @@ export function getGSIBreakdown(region) {
   const velocity = region.velocity
   const infra    = region.infra ?? 0
 
-  // riskScore는 gsi 실측값이 없는 시군의 fallback용 (velocity + infra만 사용)
   const nVelocity = normalize(Math.abs(velocity), 0, 119.8)
   const riskScore = nVelocity * 0.35 + infra * 0.25
 
@@ -227,19 +207,33 @@ export function getGSIBreakdown(region) {
     ? parseFloat(gsiSource.toFixed(1))
     : parseFloat((10 * (1 - riskScore)).toFixed(1))
 
-  const result = {
-    gsi,
-    raw: { velocity, infra },
-  }
-
+  const result = { gsi, raw: { velocity, infra } }
   gsiCache.set(key, result)
   return result
 }
 
-// RF 4등급 분류 (멘토 2-4 경계: 8+ 안정 / 6~8 주의 / 4~6 경계 / 4미만 위험)
 export function getRFGrade(gsi) {
   if (gsi >= 8) return { label: '안정', color: '#16a34a', emoji: '🟢' }
   if (gsi >= 6) return { label: '주의', color: '#eab308', emoji: '🟡' }
   if (gsi >= 4) return { label: '경계', color: '#ea580c', emoji: '🟠' }
   return { label: '위험', color: '#dc2626', emoji: '🔴' }
+}
+
+// ===== 시군 분위수 rank 기반 등급 (공공기관용과 동일 기준) =====
+const _sortedSigunguForGrade = [...realRegionsData].sort((a, b) => a.gsi - b.gsi)
+const _nSg   = _sortedSigunguForGrade.length
+const _sgI5  = Math.max(1, Math.ceil(_nSg * 0.05))
+const _sgI15 = Math.ceil(_nSg * 0.15)
+const _sgI40 = Math.ceil(_nSg * 0.40)
+const _sigunguRankMapExport = Object.fromEntries(
+  _sortedSigunguForGrade.map((r, i) => [r.id, i])
+)
+
+export function getSigunguGrade(region) {
+  const rank = _sigunguRankMapExport[region.id]
+  if (rank === undefined) return { label: '안정', color: '#16a34a', emoji: '🟢' }
+  if (rank < _sgI5)  return { label: '위험', color: '#dc2626', emoji: '🔴' }
+  if (rank < _sgI15) return { label: '경계', color: '#ea580c', emoji: '🟠' }
+  if (rank < _sgI40) return { label: '주의', color: '#ca8a04', emoji: '🟡' }
+  return               { label: '안정', color: '#16a34a', emoji: '🟢' }
 }
